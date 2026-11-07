@@ -129,6 +129,39 @@ class _SensorPageState extends State<SensorPage> {
     }
   }
 
+  void _showGuide() {
+    final profile = _profile;
+    if (profile.label == 'pH Level') {
+      showPhInfoModal(context);
+      return;
+    }
+    final description = switch (profile.label) {
+      'Temperature' =>
+        'Temperature readings show changes in the water before and after filtration. Compare both values to monitor temperature variation.',
+      'Turbidity' =>
+        'Turbidity indicates how cloudy the water is due to suspended particles. Lower readings generally indicate clearer water.',
+      'TDS' =>
+        'Total dissolved solids (TDS) estimates the concentration of dissolved substances in the water, reported here in mg/L.',
+      'Water Flow' =>
+        'Water-flow readings show the volume of water moving through the system over time, reported here in liters per minute.',
+      _ => 'Review the sensor readings and compare pre- and post-filtration values.',
+    };
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text(profile.label, style: AppText.sf(20, weight: FontWeight.w700)),
+        content: Text(description, style: AppText.inter(14, color: AppColors.muted)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Close', style: AppText.inter(14, color: AppColors.accent)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final profile = _profile;
@@ -147,7 +180,7 @@ class _SensorPageState extends State<SensorPage> {
         showBack: true,
         trailing: CircleChip(
           icon: Icons.lightbulb_outline_rounded,
-          onTap: () => showPhInfoModal(context),
+          onTap: _showGuide,
         ),
       ),
       body: ListView(
