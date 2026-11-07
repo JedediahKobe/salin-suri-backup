@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
+import 'notification_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -38,7 +39,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppTopBar(title: 'Salin-Suri'),
+      appBar: AppTopBar(
+        title: 'Salin-Suri',
+        trailing: CircleChip(
+          icon: Icons.notifications_none_rounded,
+          dot: true,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const NotificationScreen()),
+          ),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 110),
         children: [
