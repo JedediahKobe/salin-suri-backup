@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../widgets/accordion.dart';
 import '../widgets/common.dart';
 import '../widgets/line_chart.dart';
+import '../widgets/modals/ph_info_modal.dart';
 import '../widgets/segmented_tabs.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -29,7 +30,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
         title: 'ph Level History',
         showBack: true,
         trailing: CircleChip(
-            icon: Icons.lightbulb_outline_rounded, onTap: () {}),
+            icon: Icons.lightbulb_outline_rounded,
+            onTap: () => showPhInfoModal(context)),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(8, 12, 8, 24),

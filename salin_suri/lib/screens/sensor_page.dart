@@ -4,6 +4,8 @@ import '../data/sample_data.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 import '../widgets/line_chart.dart';
+import '../widgets/modals/ph_info_modal.dart';
+import '../widgets/modals/sensor_status_modal.dart';
 import 'history_screen.dart';
 import 'sensors_screen.dart';
 
@@ -42,7 +44,8 @@ class _SensorPageState extends State<SensorPage> {
         title: widget.info.pageTitle,
         showBack: true,
         trailing: CircleChip(
-            icon: Icons.lightbulb_outline_rounded, onTap: () {}),
+            icon: Icons.lightbulb_outline_rounded,
+            onTap: () => showPhInfoModal(context)),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
@@ -79,9 +82,16 @@ class _SensorPageState extends State<SensorPage> {
           const SizedBox(height: 30),
           SectionTitle(
             'Real-time Monitoring',
-            trailing: Text('Sensor Status',
-                style: AppText.sf(11,
-                    weight: FontWeight.w500, color: AppColors.accent)),
+            trailing: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => showSensorStatusModal(context),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text('Sensor Status',
+                    style: AppText.sf(11,
+                        weight: FontWeight.w500, color: AppColors.accent)),
+              ),
+            ),
           ),
           const SizedBox(height: 12),
           StatsPanel(
