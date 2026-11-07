@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
+import 'notification_screen.dart';
 
 class _Stage {
   const _Stage(this.name, this.purpose, this.type, this.asset, this.icon);
@@ -97,7 +98,16 @@ class _FilterScreenState extends State<FilterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppTopBar(title: 'Salin-Suri'),
+      appBar: AppTopBar(
+        title: 'Salin-Suri',
+        trailing: CircleChip(
+          icon: Icons.notifications_none_rounded,
+          dot: true,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const NotificationScreen()),
+          ),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(14, 16, 14, 110),
         child: Column(
