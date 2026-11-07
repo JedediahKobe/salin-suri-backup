@@ -14,7 +14,7 @@ class SensorInfo {
 
   static const all = <SensorInfo>[
     SensorInfo('Temperature', Icons.thermostat_rounded, 'Temperature Sensor'),
-    SensorInfo('pH Level', Icons.water_drop_outlined, 'ph Sensor'),
+    SensorInfo('pH Level', Icons.water_drop_outlined, 'pH Sensor'),
     SensorInfo('Turbidity', Icons.grain_rounded, 'Turbidity Sensor'),
     SensorInfo('Total Dissolved\nSolids (TDS)', Icons.opacity_outlined, 'TDS Sensor'),
     SensorInfo('Water Flow', Icons.waves_rounded, 'Water Flow Sensor'),
