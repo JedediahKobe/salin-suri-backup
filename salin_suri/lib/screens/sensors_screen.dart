@@ -14,7 +14,7 @@ class SensorInfo {
 
   static const all = <SensorInfo>[
     SensorInfo('Temperature', Icons.thermostat_rounded, 'Temperature Sensor'),
-    SensorInfo('pH Level', Icons.water_drop_outlined, 'ph Sensor'),
+    SensorInfo('pH Level', Icons.water_drop_outlined, 'pH Sensor'),
     SensorInfo('Turbidity', Icons.grain_rounded, 'Turbidity Sensor'),
     SensorInfo('Total Dissolved\nSolids (TDS)', Icons.opacity_outlined, 'TDS Sensor'),
     SensorInfo('Water Flow', Icons.waves_rounded, 'Water Flow Sensor'),
@@ -27,11 +27,13 @@ class SensorCard extends StatelessWidget {
     super.key,
     required this.info,
     this.width,
+    this.height = 133,
     this.radius = 15,
   });
 
   final SensorInfo info;
   final double? width;
+  final double height;
   final double radius;
 
   @override
@@ -41,8 +43,8 @@ class SensorCard extends StatelessWidget {
           .push(MaterialPageRoute(builder: (_) => SensorPage(info: info))),
       child: Container(
         width: width,
-        height: 133,
-        padding: const EdgeInsets.fromLTRB(13, 26, 8, 12),
+        height: height,
+        padding: EdgeInsets.fromLTRB(13, height < 120 ? 13 : 26, 8, 12),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(radius),
@@ -54,18 +56,18 @@ class SensorCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: height < 120 ? 28 : 36,
+                  height: height < 120 ? 28 : 36,
                   decoration: const BoxDecoration(
                       color: AppColors.iconChip, shape: BoxShape.circle),
-                  child: Icon(info.icon, size: 20, color: Colors.white),
+                  child: Icon(info.icon, size: height < 120 ? 16 : 20, color: Colors.white),
                 ),
-                const Icon(Icons.chevron_right_rounded,
-                    color: Colors.white, size: 28),
+                Icon(Icons.chevron_right_rounded,
+                    color: Colors.white, size: height < 120 ? 22 : 28),
               ],
             ),
             const Spacer(),
-            Text(info.name, style: AppText.inter(15, weight: FontWeight.w500)),
+            Text(info.name, style: AppText.inter(height < 120 ? 12 : 15, weight: FontWeight.w500)),
           ],
         ),
       ),
