@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
               scrollDirection: Axis.horizontal,
               children: [
                 for (final s in SensorInfo.all.take(3)) ...[
-                  SensorCard(info: s, width: 143, radius: 20),
+                  SensorCard(info: s, width: 180, radius: 15),
                   const SizedBox(width: 15),
                 ],
               ],
