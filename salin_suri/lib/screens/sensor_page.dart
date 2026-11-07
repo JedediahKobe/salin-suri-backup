@@ -84,6 +84,20 @@ class _SensorPageState extends State<SensorPage> {
           preSeries: [3, 2.5, 1.3, 1.8, 1.5, 0.9, 3, 1.7, 0.4, 1.5, 3.8, 2.5, 1.8, 0.9, 1.6, 1.1, 0.3, 0.7, 2.2],
           postSeries: [0.7, 0.8, 0.6, 0.9, 0.7, 0.6, 0.8, 0.7, 0.5, 0.7],
         );
+      case 'Water Flow':
+        return const _ReadingProfile(
+          label: 'Water Flow',
+          unit: 'L/min',
+          pre: 20,
+          post: 18,
+          preValue: '20 L/min',
+          postValue: '18 L/min',
+          minY: 0,
+          maxY: 40,
+          step: 10,
+          preSeries: [20, 22, 19, 24, 21, 18, 23, 20, 19, 22, 25, 21],
+          postSeries: [18, 19, 17, 20, 18, 17, 19, 18, 16, 18],
+        );
       case 'Total Dissolved\nSolids (TDS)':
         return const _ReadingProfile(
           label: 'TDS',
@@ -148,6 +162,7 @@ class _SensorPageState extends State<SensorPage> {
                   style: AppText.poppins(28),
                 ),
               ),
+              if (isPh)
               GestureDetector(
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const HistoryScreen()),
