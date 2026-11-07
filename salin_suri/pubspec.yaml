@@ -1,0 +1,24 @@
+name: salin_suri
+description: Salin-Suri water-quality monitoring app (Flutter implementation of the Figma design).
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  # Export these from Figma (they are raster/illustration assets) and drop them in assets/images/.
+  # The screens fall back to an icon if a file is missing.
+  assets:
+    - assets/images/

@@ -1,0 +1,111 @@
+import 'package:flutter/material.dart';
+
+import '../theme/app_theme.dart';
+import '../widgets/common.dart';
+import 'notification_screen.dart';
+import 'sensor_page.dart';
+
+class SensorInfo {
+  const SensorInfo(this.name, this.icon, this.pageTitle);
+
+  final String name;
+  final IconData icon;
+  final String pageTitle;
+
+  static const all = <SensorInfo>[
+    SensorInfo('Temperature', Icons.thermostat_rounded, 'Temperature Sensor'),
+    SensorInfo('pH Level', Icons.water_drop_outlined, 'ph Sensor'),
+    SensorInfo('Turbidity', Icons.grain_rounded, 'Turbidity Sensor'),
+    SensorInfo('Total Dissolved\nSolids (TDS)', Icons.opacity_outlined, 'TDS Sensor'),
+    SensorInfo('Water Flow', Icons.waves_rounded, 'Water Flow Sensor'),
+  ];
+}
+
+/// Card used both in the horizontal Home list (143x133, r20) and the Sensors grid (r15).
+class SensorCard extends StatelessWidget {
+  const SensorCard({
+    super.key,
+    required this.info,
+    this.width,
+    this.radius = 15,
+  });
+
+  final SensorInfo info;
+  final double? width;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => SensorPage(info: info))),
+      child: Container(
+        width: width,
+        height: 133,
+        padding: const EdgeInsets.fromLTRB(13, 26, 8, 12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: const BoxDecoration(
+                      color: AppColors.iconChip, shape: BoxShape.circle),
+                  child: Icon(info.icon, size: 20, color: Colors.white),
+                ),
+                const Icon(Icons.chevron_right_rounded,
+                    color: Colors.white, size: 28),
+              ],
+            ),
+            const Spacer(),
+            Text(info.name, style: AppText.inter(15, weight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SensorsScreen extends StatelessWidget {
+  const SensorsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppTopBar(
+        title: 'Salin-Suri',
+        showBack: true,
+        trailing: CircleChip(
+          icon: Icons.notifications_none_rounded,
+          dot: true,
+          onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationScreen())),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(11),
+        children: [
+          Text('Sensors', style: AppText.sf(22, weight: FontWeight.w700)),
+          const SizedBox(height: 12),
+          GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 180 / 133,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            children: [for (final s in SensorInfo.all) SensorCard(info: s)],
+          ),
+        ],
+      ),
+    );
+  }
+}
