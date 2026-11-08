@@ -199,7 +199,8 @@ class _InsightChart extends StatelessWidget {
       child: Column(
         children: [
           LineChart(
-            series: SampleData.preAndPost(spec.preSeries, spec.postSeries),
+            series: SampleData.preAndPost(
+                spec.insightPre ?? spec.preSeries, spec.insightPost ?? spec.postSeries),
             minY: spec.minY,
             maxY: spec.maxY,
             step: spec.step,
