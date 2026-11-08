@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 
 import '../data/sample_data.dart';
+import '../data/parameter_info.dart';
+import '../data/sensor_specs.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 import '../widgets/line_chart.dart';
-import '../widgets/modals/ph_info_modal.dart';
 import '../widgets/modals/sensor_status_modal.dart';
 import 'history_screen.dart';
-import 'sensors_screen.dart';
 
+/// Sensor detail page. One implementation drives pH, Temperature, Turbidity and TDS
+/// (Figma 40:39, 583:223, 583:408, 583:593) via [SensorSpec].
 class SensorPage extends StatefulWidget {
-  const SensorPage({super.key, required this.info});
+  const SensorPage({super.key, required this.spec});
 
-  final SensorInfo info;
+  final SensorSpec spec;
 
   @override
   State<SensorPage> createState() => _SensorPageState();
@@ -21,31 +23,22 @@ class SensorPage extends StatefulWidget {
 class _SensorPageState extends State<SensorPage> {
   String _stage = 'Pre-filtration';
 
-  // Sample readings (pre / post).
-  static const double _pre = 9.8;
-  static const double _post = 7.2;
-
   @override
   Widget build(BuildContext context) {
-    final change = (_post - _pre).abs();
+    final s = widget.spec;
+    final change = (s.post - s.pre).abs();
     // Figma annotation: when post is higher than pre the arrow flips (up) and turns red.
-    final postHigher = _post > _pre;
-
+    final postHigher = s.post > s.pre;
     final isPre = _stage == 'Pre-filtration';
-    final series = [
-      ChartSeries(
-        values: isPre ? SampleData.phPre : SampleData.phPost,
-        colors: SampleData.gradient,
-      ),
-    ];
 
     return Scaffold(
       appBar: AppTopBar(
-        title: widget.info.pageTitle,
+        title: s.pageTitle,
         showBack: true,
         trailing: CircleChip(
-            icon: Icons.lightbulb_outline_rounded,
-            onTap: () => showPhInfoModal(context)),
+          icon: Icons.lightbulb_outline_rounded,
+          onTap: () => showParameterInfoModal(context, s.info),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
@@ -54,14 +47,12 @@ class _SensorPageState extends State<SensorPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Text(
-                  'DFRobot Gravity\n${widget.info.name.replaceAll('\n', ' ')}',
-                  style: AppText.poppins(28),
-                ),
+                child: Text('DFRobot Gravity\n${s.heading}',
+                    style: AppText.poppins(28)),
               ),
               GestureDetector(
-                onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const HistoryScreen())),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => HistoryScreen(spec: s))),
                 child: Container(
                   width: 48,
                   height: 48,
@@ -74,33 +65,33 @@ class _SensorPageState extends State<SensorPage> {
             ],
           ),
           const SizedBox(height: 16),
-          const AssetOrIcon(
-            asset: 'assets/images/ph_sensor.png',
-            fallback: Icons.sensors_rounded,
-            height: 176,
-          ),
+          AssetOrIcon(asset: s.photoAsset, fallback: s.photoFallback, height: 176),
           const SizedBox(height: 30),
           SectionTitle(
             'Real-time Monitoring',
-            trailing: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => showSensorStatusModal(context),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text('Sensor Status',
+            trailing: s.hasStatusLink
+                ? GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => showSensorStatusModal(context),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text('Sensor Status',
+                          style: AppText.sf(11,
+                              weight: FontWeight.w500, color: AppColors.accent)),
+                    ),
+                  )
+                : Text('Sample data',
                     style: AppText.sf(11,
-                        weight: FontWeight.w500, color: AppColors.accent)),
-              ),
-            ),
+                        weight: FontWeight.w500, color: AppColors.muted)),
           ),
           const SizedBox(height: 12),
           StatsPanel(
             cells: [
-              const StatCell(label: 'Pre-Filtration', value: '9.8'),
-              const StatCell(label: 'Post Filtration', value: '7.2'),
+              StatCell(label: 'Pre-Filtration', value: s.format(s.pre)),
+              StatCell(label: s.postLabel, value: s.format(s.post)),
               StatCell(
-                label: 'Change',
-                value: change.toStringAsFixed(1),
+                label: s.changeLabel,
+                value: change.toStringAsFixed(s.decimals),
                 valueWidget: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -112,7 +103,7 @@ class _SensorPageState extends State<SensorPage> {
                       color: postHigher ? AppColors.bad : AppColors.good,
                     ),
                     const SizedBox(width: 4),
-                    Text(change.toStringAsFixed(1),
+                    Text(change.toStringAsFixed(s.decimals),
                         style: AppText.sf(17, weight: FontWeight.w600)),
                   ],
                 ),
@@ -128,8 +119,11 @@ class _SensorPageState extends State<SensorPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('pH Level Over Time',
-                        style: AppText.sf(20, weight: FontWeight.w600)),
+                    Flexible(
+                      child: Text(s.chartTitle,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.sf(20, weight: FontWeight.w600)),
+                    ),
                     DropdownPill(
                       value: _stage,
                       options: const ['Pre-filtration', 'Post-filtration'],
@@ -138,7 +132,18 @@ class _SensorPageState extends State<SensorPage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                LineChart(series: series, height: 240),
+                LineChart(
+                  series: [
+                    ChartSeries(
+                      values: isPre ? s.preSeries : s.postSeries,
+                      colors: SampleData.gradient,
+                    ),
+                  ],
+                  minY: s.minY,
+                  maxY: s.maxY,
+                  step: s.step,
+                  height: 240,
+                ),
               ],
             ),
           ),

@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../data/filter_materials.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 
-class _Stage {
-  const _Stage(this.name, this.purpose, this.type, this.asset, this.icon);
-
-  final String name;
-  final String purpose;
-  final String type;
-  final String asset;
-  final IconData icon;
-}
-
+/// Filtration screen: a carousel of [FilterMaterial] cards (Figma Filter Media Card
+/// 112:1075). The lightbulb opens the current material's info modal (134:*).
 class FilterScreen extends StatefulWidget {
   const FilterScreen({super.key});
 
@@ -21,14 +14,7 @@ class FilterScreen extends StatefulWidget {
 }
 
 class _FilterScreenState extends State<FilterScreen> {
-  static const _stages = [
-    _Stage('Coconut Husk Fiber', 'Traps larger particles, dirt, and suspended solids',
-        'Mechanical Filtration', 'assets/images/coconut_husk.png', Icons.grass_rounded),
-    _Stage('Stage 2 Medium', 'Placeholder purpose text for stage 2', 'Placeholder type',
-        'assets/images/stage2.png', Icons.layers_rounded),
-    _Stage('Stage 3 Medium', 'Placeholder purpose text for stage 3', 'Placeholder type',
-        'assets/images/stage3.png', Icons.water_rounded),
-  ];
+  static const _materials = FilterMaterial.all;
 
   final _controller = PageController();
   int _page = 0;
@@ -40,7 +26,7 @@ class _FilterScreenState extends State<FilterScreen> {
   }
 
   void _go(int delta) {
-    final next = (_page + delta).clamp(0, _stages.length - 1);
+    final next = (_page + delta).clamp(0, _materials.length - 1);
     _controller.animateToPage(next,
         duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
@@ -58,21 +44,24 @@ class _FilterScreenState extends State<FilterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text('Filtration\nStage ${_page + 1} of ${_stages.length}',
+                  child: Text('Filtration\n${_materials[_page].stageLabel}',
                       style: AppText.poppins(28)),
                 ),
-                const CircleChip(
-                    icon: Icons.lightbulb_outline_rounded, size: 48),
+                CircleChip(
+                  icon: Icons.lightbulb_outline_rounded,
+                  size: 48,
+                  onTap: () => _materials[_page].showInfo(context),
+                ),
               ],
             ),
             const SizedBox(height: 12),
             Expanded(
               child: PageView.builder(
                 controller: _controller,
-                itemCount: _stages.length,
+                itemCount: _materials.length,
                 onPageChanged: (i) => setState(() => _page = i),
                 itemBuilder: (_, i) {
-                  final s = _stages[i];
+                  final m = _materials[i];
                   return Column(
                     children: [
                       Expanded(
@@ -80,7 +69,9 @@ class _FilterScreenState extends State<FilterScreen> {
                           alignment: Alignment.center,
                           children: [
                             AssetOrIcon(
-                                asset: s.asset, fallback: s.icon, height: 180),
+                                asset: m.asset,
+                                fallback: m.fallbackIcon,
+                                height: 180),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: _Arrow(
@@ -96,7 +87,12 @@ class _FilterScreenState extends State<FilterScreen> {
                           ],
                         ),
                       ),
-                      Text(s.name, style: AppText.poppins(28)),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(m.name,
+                            textAlign: TextAlign.center,
+                            style: AppText.poppins(28)),
+                      ),
                       const SizedBox(height: 40),
                       SurfaceCard(
                         padding: const EdgeInsets.all(20),
@@ -105,14 +101,15 @@ class _FilterScreenState extends State<FilterScreen> {
                             children: [
                               Expanded(
                                   child: _InfoColumn(
-                                      title: 'Purpose', body: s.purpose)),
+                                      title: 'Purpose', body: m.purpose)),
                               const VerticalDivider(
                                   width: 24,
                                   thickness: 1,
                                   color: AppColors.divider),
                               Expanded(
                                   child: _InfoColumn(
-                                      title: 'Filtration Type', body: s.type)),
+                                      title: 'Filtration Type',
+                                      body: m.filtrationType)),
                             ],
                           ),
                         ),
@@ -152,7 +149,9 @@ class _InfoColumn extends StatelessWidget {
       children: [
         Text(title, style: AppText.sf(17, weight: FontWeight.w700)),
         const SizedBox(height: 14),
-        Text(body, textAlign: TextAlign.center, style: AppText.poppins(12, weight: FontWeight.w400)),
+        Text(body,
+            textAlign: TextAlign.center,
+            style: AppText.poppins(12, weight: FontWeight.w400)),
       ],
     );
   }

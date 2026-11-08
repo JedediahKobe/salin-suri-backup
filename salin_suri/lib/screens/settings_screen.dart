@@ -34,10 +34,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             rows: [
               _Row(
                 label: 'Dark Mode',
-                trailing: Switch(
+                trailing: AppToggle(
                   value: _darkMode,
-                  activeColor: Colors.white,
-                  activeTrackColor: AppColors.accent,
                   onChanged: (v) => setState(() => _darkMode = v),
                 ),
               ),

@@ -169,11 +169,23 @@ class DropdownPill extends StatelessWidget {
     return PopupMenuButton<String>(
       initialValue: value,
       onSelected: onChanged,
-      color: AppColors.surfaceInner,
+      // Figma "6" dropdown menu (81:553): r10, 0.5px #909090 border, accent Inter 11 items.
+      color: AppColors.surface,
+      elevation: 0,
       padding: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: const BorderSide(color: Color(0xFF909090), width: 0.5),
+      ),
       itemBuilder: (_) => [
         for (final o in options)
-          PopupMenuItem(value: o, child: Text(o, style: AppText.inter(13))),
+          PopupMenuItem(
+            value: o,
+            height: 28,
+            child: Text(o,
+                style: AppText.inter(11,
+                    weight: FontWeight.w500, color: AppColors.accent)),
+          ),
       ],
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -348,6 +360,42 @@ class AssetOrIcon extends StatelessWidget {
         child: Center(
           child: Icon(fallback,
               size: (height ?? width ?? 96) * 0.5, color: AppColors.accent),
+        ),
+      ),
+    );
+  }
+}
+
+
+/// Switch from Figma (323:143): 40x21 track, r40. Off = dark track + grey thumb left,
+/// on = accent track + white thumb right.
+class AppToggle extends StatelessWidget {
+  const AppToggle({super.key, required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 40,
+        height: 21,
+        padding: const EdgeInsets.all(2),
+        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+        decoration: BoxDecoration(
+          color: value ? AppColors.accent : AppColors.surfaceInner,
+          borderRadius: BorderRadius.circular(40),
+        ),
+        child: Container(
+          width: 17,
+          height: 17,
+          decoration: BoxDecoration(
+            color: value ? Colors.white : AppColors.muted,
+            shape: BoxShape.circle,
+          ),
         ),
       ),
     );
