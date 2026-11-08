@@ -2,22 +2,27 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
+import '../data/sensor_specs.dart';
 import 'notification_screen.dart';
 import 'sensor_page.dart';
 
 class SensorInfo {
-  const SensorInfo(this.name, this.icon, this.pageTitle);
+  const SensorInfo(this.name, this.icon, this.specId);
 
   final String name;
   final IconData icon;
-  final String pageTitle;
+
+  /// Matches a [SensorSpec.id]; null = no detail design yet (Water Flow).
+  final String? specId;
+
+  SensorSpec? get spec => specId == null ? null : SensorSpec.byId(specId!);
 
   static const all = <SensorInfo>[
-    SensorInfo('Temperature', Icons.thermostat_rounded, 'Temperature Sensor'),
-    SensorInfo('pH Level', Icons.water_drop_outlined, 'ph Sensor'),
-    SensorInfo('Turbidity', Icons.grain_rounded, 'Turbidity Sensor'),
-    SensorInfo('Total Dissolved\nSolids (TDS)', Icons.opacity_outlined, 'TDS Sensor'),
-    SensorInfo('Water Flow', Icons.waves_rounded, 'Water Flow Sensor'),
+    SensorInfo('Temperature', Icons.thermostat_rounded, 'temperature'),
+    SensorInfo('pH Level', Icons.water_drop_outlined, 'ph'),
+    SensorInfo('Turbidity', Icons.grain_rounded, 'turbidity'),
+    SensorInfo('Total Dissolved\nSolids (TDS)', Icons.opacity_outlined, 'tds'),
+    SensorInfo('Water Flow', Icons.waves_rounded, null),
   ];
 }
 
@@ -37,8 +42,10 @@ class SensorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => SensorPage(info: info))),
+      onTap: info.spec == null
+          ? null
+          : () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => SensorPage(spec: info.spec!))),
       child: Container(
         width: width,
         height: 133,

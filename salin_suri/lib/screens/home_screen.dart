@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/sample_data.dart';
+import '../data/sensor_specs.dart';
 import '../theme/app_theme.dart';
 import '../widgets/accordion.dart';
 import '../widgets/common.dart';
@@ -127,22 +128,22 @@ class _HomeScreenState extends State<HomeScreen> {
               AccordionItemData(
                 title: 'pH Level Monitoring',
                 subtitle: 'Monitor pH Level changes',
-                body: _InsightChart(pre: SampleData.phPre, post: SampleData.phPost),
+                body: _InsightChart(spec: SensorSpec.ph),
               ),
               AccordionItemData(
                 title: 'Water Temperature Monitoring',
                 subtitle: 'Monitor temperature changes',
-                body: _InsightChart(pre: SampleData.tempPre, post: SampleData.tempPost),
+                body: _InsightChart(spec: SensorSpec.temperature),
               ),
               AccordionItemData(
                 title: 'Turbidity Monitoring',
                 subtitle: 'Monitor turbidity changes',
-                body: _InsightChart(pre: SampleData.turbPre, post: SampleData.turbPost),
+                body: _InsightChart(spec: SensorSpec.turbidity),
               ),
               AccordionItemData(
                 title: 'TDS Monitoring',
                 subtitle: 'Monitor TDS changes',
-                body: _InsightChart(pre: SampleData.tdsPre, post: SampleData.tdsPost),
+                body: _InsightChart(spec: SensorSpec.tds),
               ),
             ],
           ),
@@ -187,10 +188,9 @@ class _StatusCard extends StatelessWidget {
 
 /// Expanded body of an insight accordion: chart + Pre/Post legend.
 class _InsightChart extends StatelessWidget {
-  const _InsightChart({required this.pre, required this.post});
+  const _InsightChart({required this.spec});
 
-  final List<double> pre;
-  final List<double> post;
+  final SensorSpec spec;
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +198,13 @@ class _InsightChart extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
       child: Column(
         children: [
-          LineChart(series: SampleData.preAndPost(pre, post), height: 250),
+          LineChart(
+            series: SampleData.preAndPost(spec.preSeries, spec.postSeries),
+            minY: spec.minY,
+            maxY: spec.maxY,
+            step: spec.step,
+            height: 250,
+          ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
