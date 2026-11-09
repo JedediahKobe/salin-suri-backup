@@ -1,18 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../data/notification_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 import 'ph_alert_details_screen.dart';
-
-class _Alert {
-  _Alert(this.title, this.body, this.time, {this.unread = false, this.opensPh = false});
-
-  final String title;
-  final String body;
-  final String time;
-  final bool opensPh;
-  bool unread;
-}
 
 /// Notification list (Figma 117:1198). Shown as a tab in the app shell; pass
 /// [standalone] when it is pushed as a route (e.g. from the Sensors screen) to get a back button.
@@ -26,32 +17,11 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  // Dummy data until alerts come from the backend.
-  final _alerts = [
-    _Alert(
-      'pH Alert',
-      'pH Level Outside Reference Range Pre-filtration pH reached 9.8, which is above the...',
-      '27/10/26, 9:10 am',
-      unread: true,
-      opensPh: true,
-    ),
-    _Alert(
-      'Turbidity Alert',
-      'High Turbidity Detected Post-filtration turbidity spiked to 4.2 NTU, exceeding the 1.0 NTU thr...',
-      '26/10/26, 3:45 pm',
-    ),
-    _Alert(
-      'Flow Rate Notice',
-      'Low Flow Rate Warning Intake flow dropped to 12 L/min, below the expected 20 L/min minimu..',
-      '24/10/26, 8:05 am',
-    ),
-  ];
+  final _store = NotificationStore.instance;
 
-  int get _unread => _alerts.where((a) => a.unread).length;
-
-  void _open(_Alert a) {
-    setState(() => a.unread = false);
-    if (a.opensPh) {
+  void _open(AlertItem a) {
+    _store.markRead(a);
+    if (a.opensPhDetails) {
       Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const PhAlertDetailsScreen()));
     }
@@ -59,36 +29,37 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppTopBar(
-        title: 'Notification',
-        showBack: widget.standalone,
-        trailing: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _unread == 0
-              ? null
-              : () => setState(() {
-                    for (final a in _alerts) {
-                      a.unread = false;
-                    }
-                  }),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              _unread == 0 ? 'All read' : 'Read All ($_unread)',
-              style: AppText.inter(11,
-                  weight: FontWeight.w700,
-                  color: _unread == 0 ? AppColors.muted : AppColors.accent),
+    return ListenableBuilder(
+      listenable: _store,
+      builder: (context, _) {
+        final unread = _store.unreadCount;
+        return Scaffold(
+          appBar: AppTopBar(
+            title: 'Notification',
+            showBack: widget.standalone,
+            trailing: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: unread == 0 ? null : _store.markAllRead,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  unread == 0 ? 'All read' : 'Read All ($unread)',
+                  style: AppText.inter(11,
+                      weight: FontWeight.w700,
+                      color: unread == 0 ? AppColors.muted : AppColors.accent),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(23, 18, 19, 110),
-        children: [
-          for (final a in _alerts) _AlertTile(alert: a, onTap: () => _open(a)),
-        ],
-      ),
+          body: ListView(
+            padding: const EdgeInsets.fromLTRB(23, 18, 19, 110),
+            children: [
+              for (final a in _store.alerts)
+                _AlertTile(alert: a, onTap: () => _open(a)),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -96,7 +67,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 class _AlertTile extends StatelessWidget {
   const _AlertTile({required this.alert, required this.onTap});
 
-  final _Alert alert;
+  final AlertItem alert;
   final VoidCallback onTap;
 
   @override

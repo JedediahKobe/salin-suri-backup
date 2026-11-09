@@ -4,6 +4,7 @@ import '../data/sample_data.dart';
 import '../data/parameter_info.dart';
 import '../data/sensor_specs.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
 import '../widgets/line_chart.dart';
 import '../widgets/modals/sensor_status_modal.dart';
@@ -36,7 +37,7 @@ class _SensorPageState extends State<SensorPage> {
         title: s.pageTitle,
         showBack: true,
         trailing: CircleChip(
-          icon: Icons.lightbulb_outline_rounded,
+          appIcon: AppIconType.bulb,
           onTap: () => showParameterInfoModal(context, s.info),
         ),
       ),
@@ -58,8 +59,10 @@ class _SensorPageState extends State<SensorPage> {
                   height: 48,
                   decoration: const BoxDecoration(
                       color: AppColors.iconChip, shape: BoxShape.circle),
-                  child: const Icon(Icons.history_rounded,
-                      color: AppColors.accent, size: 28),
+                  child: const Center(
+                    child: AppIcon(AppIconType.history,
+                        color: AppColors.accent, size: 28),
+                  ),
                 ),
               ),
             ],

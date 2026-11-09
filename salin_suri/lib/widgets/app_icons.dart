@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-enum AppIconType { home, filter, bell, settings }
+enum AppIconType { home, filter, bell, settings, bulb, history }
 
 /// Outline icons drawn to match the Figma navigation bar (house with door, funnel, bell,
 /// cog). 24-unit grid, 2px round stroke, so they stay crisp at any size.
@@ -53,6 +53,10 @@ class _IconPainter extends CustomPainter {
         _bell(canvas, paint);
       case AppIconType.settings:
         _gear(canvas, paint);
+      case AppIconType.bulb:
+        _bulb(canvas, paint);
+      case AppIconType.history:
+        _history(canvas, paint);
     }
   }
 
@@ -102,6 +106,63 @@ class _IconPainter extends CustomPainter {
           ..arcToPoint(const Offset(6, 8),
               radius: const Radius.circular(6), clockwise: false)
           ..cubicTo(6, 12.499, 4.589, 13.956, 3.262, 15.326),
+        p);
+  }
+
+  /// Lightbulb with light rays: the bulb is scaled down to leave room for the rays.
+  void _bulb(Canvas c, Paint p) {
+    c.save();
+    c.translate(12, 13);
+    c.scale(0.78);
+    c.translate(-12, -12);
+    c.drawPath(
+        Path()
+          ..moveTo(15, 14)
+          ..cubicTo(15.2, 13, 15.7, 12.3, 16.5, 11.5)
+          ..cubicTo(17.5, 10.6, 18, 9.3, 18, 8)
+          ..arcToPoint(const Offset(6, 8),
+              radius: const Radius.circular(6), clockwise: false)
+          ..cubicTo(6, 9, 6.2, 10.2, 7.5, 11.5)
+          ..cubicTo(8.2, 12.2, 8.8, 13, 9, 14)
+          ..close(),
+        p);
+    c.drawLine(const Offset(9, 18), const Offset(15, 18), p);
+    c.drawLine(const Offset(10, 22), const Offset(14, 22), p);
+    c.restore();
+    // Rays (top, upper diagonals, sides) around the globe.
+    const cx = 12.0, cy = 9.9;
+    for (final deg in [-90, -135, -45, 180, 0]) {
+      final a = deg * math.pi / 180;
+      c.drawLine(
+        Offset(cx + 6.8 * math.cos(a), cy + 6.8 * math.sin(a)),
+        Offset(cx + 8.8 * math.cos(a), cy + 8.8 * math.sin(a)),
+        p,
+      );
+    }
+  }
+
+  /// Clock with a counter-clockwise arrow (history).
+  void _history(Canvas c, Paint p) {
+    c.drawPath(
+        Path()
+          ..moveTo(3, 12)
+          ..arcToPoint(const Offset(12, 3),
+              radius: const Radius.circular(9), largeArc: true, clockwise: true)
+          ..arcToPoint(const Offset(5.26, 5.74),
+              radius: const Radius.circular(9.75), clockwise: false)
+          ..lineTo(3, 8),
+        p);
+    c.drawPath(
+        Path()
+          ..moveTo(3, 3)
+          ..lineTo(3, 8)
+          ..lineTo(8, 8),
+        p);
+    c.drawPath(
+        Path()
+          ..moveTo(12, 7)
+          ..lineTo(12, 12)
+          ..lineTo(16, 14),
         p);
   }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../data/notification_store.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
 import '../data/sensor_specs.dart';
 import 'notification_screen.dart';
@@ -89,11 +91,14 @@ class SensorsScreen extends StatelessWidget {
       appBar: AppTopBar(
         title: 'Salin-Suri',
         showBack: true,
-        trailing: CircleChip(
-          icon: Icons.notifications_none_rounded,
-          dot: true,
+        trailing: ListenableBuilder(
+          listenable: NotificationStore.instance,
+          builder: (context, _) => CircleChip(
+            appIcon: AppIconType.bell,
+            dot: NotificationStore.instance.hasUnread,
           onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const NotificationScreen(standalone: true))),
+          ),
         ),
       ),
       body: ListView(
