@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../data/parameter_info.dart';
 import '../data/sample_data.dart';
 import '../data/sensor_specs.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
 import '../widgets/line_chart.dart';
 import '../widgets/segmented_tabs.dart';
+import 'monitoring_history_screen.dart';
 
 /// History / insight screen for one parameter (Figma 67:221, 583:295, 583:480, 583:665):
 /// pre/post tabs, summary stats, chart, then a Statistical Summary card.
@@ -34,9 +35,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
       appBar: AppTopBar(
         title: s.historyTitle,
         showBack: true,
+        // Figma: the top-right button is now History, which opens the list of
+        // past filtration runs.
         trailing: CircleChip(
-          icon: Icons.lightbulb_outline_rounded,
-          onTap: () => showParameterInfoModal(context, s.info),
+          appIcon: AppIconType.history,
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => const MonitoringHistoryScreen())),
         ),
       ),
       body: ListView(

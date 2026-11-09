@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../data/notification_store.dart';
 import 'app_icons.dart';
 
 /// Top bar: dark strip with centered heavy title, optional back button and trailing chip.
@@ -63,13 +64,16 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 class CircleChip extends StatelessWidget {
   const CircleChip({
     super.key,
-    required this.icon,
+    this.icon,
+    this.appIcon,
     this.onTap,
     this.size = 32,
     this.dot = false,
-  });
+  }) : assert(icon != null || appIcon != null);
 
-  final IconData icon;
+  /// A Material icon, or [appIcon] for the custom-drawn Figma-style icons.
+  final IconData? icon;
+  final AppIconType? appIcon;
   final VoidCallback? onTap;
   final double size;
   final bool dot;
@@ -86,7 +90,10 @@ class CircleChip extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(icon, color: AppColors.accent, size: size * 0.62),
+            if (appIcon != null)
+              AppIcon(appIcon!, color: AppColors.accent, size: size * 0.66)
+            else
+              Icon(icon, color: AppColors.accent, size: size * 0.62),
             if (dot)
               Positioned(
                 top: size * 0.18,
@@ -281,7 +288,7 @@ class PillNavBar extends StatelessWidget {
     (AppIconType.settings, 'Settings'),
   ];
 
-  /// Red dot on the bell (Figma "Notification badge"). Dummy until real alerts exist.
+  /// Index of the bell tab; it shows a red dot while there are unread notifications.
   static const _bellIndex = 2;
 
   @override
@@ -311,24 +318,29 @@ class PillNavBar extends StatelessWidget {
                       builder: (context, color, _) => Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              AppIcon(_items[i].$1,
-                                  color: color ?? Colors.white, size: 30),
-                              if (i == _bellIndex)
-                                Positioned(
-                                  top: 1,
-                                  right: 3,
-                                  child: Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle),
+                          ListenableBuilder(
+                            listenable: NotificationStore.instance,
+                            builder: (_, __) => Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                AppIcon(_items[i].$1,
+                                    color: color ?? Colors.white, size: 30),
+                                // Red dot only while something is unread.
+                                if (i == _bellIndex &&
+                                    NotificationStore.instance.hasUnread)
+                                  Positioned(
+                                    top: 1,
+                                    right: 3,
+                                    child: Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle),
+                                    ),
                                   ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
                           AnimatedSize(
                             duration: const Duration(milliseconds: 200),

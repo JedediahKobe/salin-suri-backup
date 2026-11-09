@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/filter_materials.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
 
 /// Filtration screen: a carousel of [FilterMaterial] cards (Figma Filter Media Card
@@ -48,7 +49,7 @@ class _FilterScreenState extends State<FilterScreen> {
                       style: AppText.poppins(28)),
                 ),
                 CircleChip(
-                  icon: Icons.lightbulb_outline_rounded,
+                  appIcon: AppIconType.bulb,
                   size: 48,
                   onTap: () => _materials[_page].showInfo(context),
                 ),
