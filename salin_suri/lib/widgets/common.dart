@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'app_icons.dart';
 
 /// Top bar: dark strip with centered heavy title, optional back button and trailing chip.
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
@@ -274,10 +275,14 @@ class PillNavBar extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   static const _items = [
-    (Icons.home_outlined, 'Home'),
-    (Icons.filter_alt_outlined, 'Filter'),
-    (Icons.settings_outlined, 'Settings'),
+    (AppIconType.home, 'Home'),
+    (AppIconType.filter, 'Filter'),
+    (AppIconType.bell, 'Notification'),
+    (AppIconType.settings, 'Settings'),
   ];
+
+  /// Red dot on the bell (Figma "Notification badge"). Dummy until real alerts exist.
+  static const _bellIndex = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -306,12 +311,30 @@ class PillNavBar extends StatelessWidget {
                       builder: (context, color, _) => Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(_items[i].$1, color: color, size: 30),
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              AppIcon(_items[i].$1,
+                                  color: color ?? Colors.white, size: 30),
+                              if (i == _bellIndex)
+                                Positioned(
+                                  top: 1,
+                                  right: 3,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle),
+                                  ),
+                                ),
+                            ],
+                          ),
                           AnimatedSize(
                             duration: const Duration(milliseconds: 200),
                             child: i == index
                                 ? Text(_items[i].$2,
-                                    style: AppText.sf(14,
+                                    style: AppText.sf(12,
                                         weight: FontWeight.w700,
                                         color: AppColors.accent))
                                 : const SizedBox(height: 0, width: 0),

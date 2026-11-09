@@ -12,6 +12,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _darkMode = true;
+  bool _notifications = true;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +40,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onChanged: (v) => setState(() => _darkMode = v),
                 ),
               ),
-              _Row(label: 'Notifications', onTap: () {}),
+              _Row(
+                label: 'Notifications',
+                trailing: AppToggle(
+                  value: _notifications,
+                  onChanged: (v) => setState(() => _notifications = v),
+                ),
+              ),
               _Row(label: 'About Salin-Suri', onTap: () {}),
             ],
           ),
@@ -47,7 +54,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Support',
             caption: 'Need help? Contact our team.',
             rows: [
-              _Row(label: 'Help Center', onTap: () {}),
               _Row(label: 'Contact Us', onTap: () {}),
             ],
           ),
@@ -100,7 +106,7 @@ class _Section extends StatelessWidget {
                               style: AppText.sf(16, weight: FontWeight.w500)),
                           rows[i].trailing ??
                               const Icon(Icons.chevron_right_rounded,
-                                  size: 20, color: Colors.white),
+                                  size: 16, color: Colors.white),
                         ],
                       ),
                     ),
