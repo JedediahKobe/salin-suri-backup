@@ -68,7 +68,7 @@ class SensorCard extends StatelessWidget {
                   child: Icon(info.icon, size: 20, color: Colors.white),
                 ),
                 const Icon(Icons.chevron_right_rounded,
-                    color: Colors.white, size: 28),
+                    color: Colors.white, size: 24),
               ],
             ),
             const Spacer(),
@@ -93,7 +93,7 @@ class SensorsScreen extends StatelessWidget {
           icon: Icons.notifications_none_rounded,
           dot: true,
           onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const NotificationScreen())),
+              MaterialPageRoute(builder: (_) => const NotificationScreen(standalone: true))),
         ),
       ),
       body: ListView(

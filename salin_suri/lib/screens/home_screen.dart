@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../data/sensor_specs.dart';
+import '../main.dart' show AppShell;
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 import 'history_screen.dart';
-import 'notification_screen.dart';
 import 'sensors_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,8 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
         trailing: CircleChip(
           icon: Icons.notifications_none_rounded,
           dot: true,
-          onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const NotificationScreen())),
+          // Notification is a tab in the shell now.
+          onTap: () => AppShell.of(context)?.select(2),
         ),
       ),
       body: ListView(

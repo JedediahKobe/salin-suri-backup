@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'screens/filter_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/notification_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/settings_screen.dart';
 import 'theme/app_theme.dart';
@@ -32,9 +33,13 @@ class _SalinSuriAppState extends State<SalinSuriApp> {
   }
 }
 
-/// Home / Filter / Settings with the floating pill nav bar.
+/// Home / Filter / Notification / Settings with the floating pill nav bar.
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
+
+  /// Lets a screen inside the shell (e.g. the Home bell) switch tabs.
+  static _AppShellState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_AppShellState>();
 
   @override
   State<AppShell> createState() => _AppShellState();
@@ -43,7 +48,14 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _index = 0;
 
-  static const _pages = [HomeScreen(), FilterScreen(), SettingsScreen()];
+  static const _pages = [
+    HomeScreen(),
+    FilterScreen(),
+    NotificationScreen(),
+    SettingsScreen(),
+  ];
+
+  void select(int i) => setState(() => _index = i);
 
   @override
   Widget build(BuildContext context) {

@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 
 import 'parameter_info.dart';
 
-/// One row of the History "Guide" accordion.
-class GuideEntry {
-  const GuideEntry(this.value, this.valueLabel, this.title, this.description);
+/// Values for the History "Statistical Summary" card.
+class SummaryStats {
+  const SummaryStats({
+    required this.average,
+    required this.median,
+    required this.minimum,
+    required this.maximum,
+  });
 
-  final double value;
-  final String valueLabel;
-  final String title;
-  final String description;
+  final String average;
+  final String median;
+  final String minimum;
+  final String maximum;
 }
 
 /// Everything that differs between the Sensor Page / History screens of the four
@@ -41,7 +46,8 @@ class SensorSpec {
     required this.step,
     required this.preSeries,
     required this.postSeries,
-    required this.rangeOptions,
+    required this.historyChartTitle,
+    required this.summary,
     required this.limitLabel,
     required this.limitValue,
     required this.statusLabel,
@@ -53,9 +59,6 @@ class SensorSpec {
     required this.historyPost,
     required this.historyPreSeries,
     required this.historyPostSeries,
-    required this.guideTitle,
-    required this.guide,
-    this.guideValueSize = 25,
   });
 
   final String id;
@@ -87,7 +90,10 @@ class SensorSpec {
 
   // History
   final String historyTitle;
-  final List<String> rangeOptions; // first entry is the default
+  final String historyChartTitle;
+
+  /// Statistical Summary card (Figma 614:676...): average, median, minimum, maximum.
+  final SummaryStats summary;
   final String limitLabel; // "Reference Range" | "PNSDW 2017"
   final String limitValue;
   final String statusLabel; // "Range" | "Status"
@@ -99,9 +105,6 @@ class SensorSpec {
   final double historyPost;
   final List<double> historyPreSeries; // 7 points, Mon..Sun
   final List<double> historyPostSeries;
-  final String guideTitle;
-  final List<GuideEntry> guide;
-  final double guideValueSize;
 
   String format(double v) => '${v.toStringAsFixed(decimals)}$unit';
 
@@ -122,9 +125,11 @@ class SensorSpec {
   // ── pH ──────────────────────────────────────────────────────────────
   static const ph = SensorSpec(
     id: 'ph',
+    historyChartTitle: 'pH Level Chart',
+    summary: SummaryStats(average: '7.4', median: '7.2', minimum: '6.5', maximum: '8.5'),
     pageTitle: 'ph Sensor',
     heading: 'pH Level',
-    historyTitle: 'ph Level History',
+    historyTitle: 'ph Level Insight',
     info: ParameterInfo.ph,
     photoAsset: 'assets/images/ph_sensor.png',
     photoFallback: Icons.sensors_rounded,
@@ -141,7 +146,6 @@ class SensorSpec {
     step: 1,
     preSeries: [10, 9.5, 8.2, 8.6, 9.2, 8.9, 7.8, 8.3, 9.1, 9.6, 8.8, 8.4, 7.6, 9.0],
     postSeries: [9.0, 7.4, 7.7, 8.1, 7.6, 6.9, 7.8, 7.0, 6.7, 6.0, 7.2, 7.6, 7.1, 8.4],
-    rangeOptions: ['Last 7 days', 'Last 30 days'],
     limitLabel: 'Reference Range',
     limitValue: '6.5 - 8.5',
     statusLabel: 'Range',
@@ -149,24 +153,17 @@ class SensorSpec {
     statusOutside: 'Out of Range',
     limitMin: 6.5,
     limitMax: 8.5,
-    historyPre: 9.8,
-    historyPost: 7.2,
+    historyPre: 7.2,
+    historyPost: 7.1,
     historyPreSeries: [7.9, 9.1, 8.4, 6.8, 8.1, 8.15, 7.8],
     historyPostSeries: [7.2, 7.5, 7.3, 7.0, 7.4, 7.2, 7.1],
-    guideTitle: 'pH Level Guide',
-    guide: [
-      GuideEntry(6.0, '6.0', 'Slightly Acidic', 'Below neutral.'),
-      GuideEntry(7.2, '7.2', 'Neutral', 'Neither acidic nor alkaline'),
-      GuideEntry(8.0, '8.0', 'Slightly Alkaline', 'Slightly alkaline water'),
-      GuideEntry(9.0, '9.0', 'Alkaline',
-          'More alkaline than the commonly referenced drinking-water range.'),
-      GuideEntry(10.0, '10.0', 'Strongly Alkaline', 'Strongly alkaline water'),
-    ],
   );
 
   // ── Temperature ─────────────────────────────────────────────────────
   static const temperature = SensorSpec(
     id: 'temperature',
+    historyChartTitle: 'Temperature Level Chart',
+    summary: SummaryStats(average: '27.4 °C', median: '26.2 °C', minimum: '--', maximum: '--'),
     pageTitle: 'Temperature Sensor',
     heading: 'Temperature Sensor',
     historyTitle: 'Temperature Level Insight',
@@ -186,29 +183,22 @@ class SensorSpec {
     step: 2,
     preSeries: [30, 29, 26.6, 27.5, 27, 25.9, 30, 28, 24.8, 27.1, 31.5, 28.9, 27.7, 25.9, 27.3, 26.1, 24.6, 25.4, 28.4],
     postSeries: [28.9, 28.4, 27.6, 28.0, 27.7, 27.0, 28.6, 27.9, 26.8, 27.8, 29.0, 28.3, 27.9, 27.2, 27.8, 27.4, 26.9, 27.3, 28.1],
-    rangeOptions: ['Sample · 7 days'],
     limitLabel: 'PNSDW 2017',
     limitValue: 'Not specified',
-    statusLabel: 'Status',
-    statusWithin: 'No set limit',
-    statusOutside: 'No set limit',
+    statusLabel: 'Range',
+    statusWithin: 'No set range',
+    statusOutside: 'No set range',
     historyPre: 27.6,
     historyPost: 27.2,
     historyPreSeries: [27.7, 30.1, 28.8, 25.5, 28.2, 28.3, 27.6],
     historyPostSeries: [27.1, 28.0, 27.6, 25.9, 27.4, 27.5, 27.2],
-    guideTitle: 'Temperature Guide (°C)',
-    guide: [
-      GuideEntry(24, '24', 'Cooler', 'Cooler sample water.'),
-      GuideEntry(28, '28', 'Moderate', 'Near the current sample.'),
-      GuideEntry(30, '30', 'Warmer', 'Warmer sample water.'),
-      GuideEntry(32, '32', 'Warm', 'May affect water taste.'),
-      GuideEntry(36, '36', 'Very warm', 'Can favor microbial growth.'),
-    ],
   );
 
   // ── Turbidity ───────────────────────────────────────────────────────
   static const turbidity = SensorSpec(
     id: 'turbidity',
+    historyChartTitle: 'Turbidity Level Chart (NTU)',
+    summary: SummaryStats(average: '1.4 NTU', median: '1.3 NTU', minimum: '--', maximum: '5 NTU'),
     pageTitle: 'Turbidity Sensor',
     heading: 'Turbidity Sensor',
     historyTitle: 'Turbidity Level Insight',
@@ -228,30 +218,23 @@ class SensorSpec {
     step: 1,
     preSeries: [3.2, 2.9, 2.4, 2.6, 2.2, 1.9, 3.1, 2.5, 1.4, 2.3, 3.6, 2.8, 2.4, 1.9, 2.5, 2.0, 1.6, 1.9, 2.2],
     postSeries: [1.2, 1.0, 0.8, 0.9, 0.7, 0.6, 1.1, 0.9, 0.5, 0.8, 1.3, 1.0, 0.8, 0.6, 0.9, 0.7, 0.5, 0.6, 0.7],
-    rangeOptions: ['Sample · 7 days'],
     limitLabel: 'PNSDW 2017',
     limitValue: '≤ 5 NTU',
-    statusLabel: 'Status',
-    statusWithin: 'Within limit',
-    statusOutside: 'Above limit',
+    statusLabel: 'Range',
+    statusWithin: 'Within Range',
+    statusOutside: 'Above Range',
     limitMax: 5,
     historyPre: 1.8,
     historyPost: 0.6,
     historyPreSeries: [1.85, 3.05, 2.4, 0.75, 2.1, 2.15, 1.8],
     historyPostSeries: [0.8, 1.2, 0.9, 0.4, 0.7, 0.8, 0.6],
-    guideTitle: 'Turbidity Guide (NTU)',
-    guide: [
-      GuideEntry(0.5, '0.5', 'Low turbidity', 'Few suspended particles.'),
-      GuideEntry(1.8, '1.8', 'Current sample', 'Below the 5 NTU limit.'),
-      GuideEntry(3.0, '3.0', 'More particles', 'More suspended particles.'),
-      GuideEntry(5.0, '5.0', 'At the limit', 'PNSDW maximum: 5 NTU.'),
-      GuideEntry(8.0, '8.0', 'Above limit', 'Above the PNSDW limit.'),
-    ],
   );
 
   // ── TDS ─────────────────────────────────────────────────────────────
   static const tds = SensorSpec(
     id: 'tds',
+    historyChartTitle: 'TDS Level Chart (mg/L)',
+    summary: SummaryStats(average: '276 mg/L', median: '278 mg/L', minimum: '--', maximum: '600 mg/L'),
     pageTitle: 'TDS Sensor',
     heading: 'TDS Sensor',
     historyTitle: 'TDS Level Insight',
@@ -271,25 +254,15 @@ class SensorSpec {
     step: 100,
     preSeries: [450, 430, 360, 390, 340, 300, 440, 380, 250, 350, 470, 410, 370, 300, 360, 320, 260, 290, 320],
     postSeries: [260, 250, 210, 230, 200, 170, 250, 220, 150, 210, 270, 240, 210, 170, 210, 190, 160, 180, 180],
-    rangeOptions: ['Sample · 7 days'],
     limitLabel: 'PNSDW 2017',
     limitValue: '≤ 600 mg/L',
-    statusLabel: 'Status',
-    statusWithin: 'Within limit',
-    statusOutside: 'Above limit',
+    statusLabel: 'Range',
+    statusWithin: 'Within Range',
+    statusOutside: 'Above Range',
     limitMax: 600,
     historyPre: 280,
     historyPost: 160,
     historyPreSeries: [270, 420, 350, 150, 300, 310, 280],
     historyPostSeries: [160, 240, 200, 110, 170, 175, 160],
-    guideTitle: 'TDS Guide (mg/L)',
-    guideValueSize: 20,
-    guide: [
-      GuideEntry(100, '100', 'Low TDS', 'Fewer dissolved minerals.'),
-      GuideEntry(280, '280', 'Current sample', 'Below the 600 mg/L limit.'),
-      GuideEntry(450, '450', 'Higher TDS', 'More dissolved minerals.'),
-      GuideEntry(600, '600', 'At the limit', 'PNSDW maximum: 600 mg/L.'),
-      GuideEntry(800, '800', 'Above limit', 'Above the PNSDW limit.'),
-    ],
   );
 }

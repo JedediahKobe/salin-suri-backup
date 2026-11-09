@@ -4,13 +4,12 @@ import '../data/parameter_info.dart';
 import '../data/sample_data.dart';
 import '../data/sensor_specs.dart';
 import '../theme/app_theme.dart';
-import '../widgets/accordion.dart';
 import '../widgets/common.dart';
 import '../widgets/line_chart.dart';
-import '../widgets/parameter_guide.dart';
 import '../widgets/segmented_tabs.dart';
 
-/// History / insight screen for one parameter (Figma 67:221, 583:295, 583:480, 583:665).
+/// History / insight screen for one parameter (Figma 67:221, 583:295, 583:480, 583:665):
+/// pre/post tabs, summary stats, chart, then a Statistical Summary card.
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key, required this.spec});
 
@@ -22,7 +21,6 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   int _tab = 0; // 0 = Pre-filtration, 1 = Post-filtration
-  late String _range = widget.spec.rangeOptions.first;
 
   static const _tabLabels = ['Pre-filtration', 'Post-filtration'];
 
@@ -72,25 +70,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
                 const SizedBox(height: 12),
                 SurfaceCard(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 19, 8, 16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            child: Text(s.chartTitle,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppText.sf(20, weight: FontWeight.w600)),
-                          ),
-                          DropdownPill(
-                            value: _range,
-                            options: s.rangeOptions,
-                            onChanged: (v) => setState(() => _range = v),
-                          ),
-                        ],
-                      ),
+                      Text(s.historyChartTitle,
+                          textAlign: TextAlign.center,
+                          style: AppText.sf(20, weight: FontWeight.w600)),
                       const SizedBox(height: 12),
                       LineChart(
                         series: [
@@ -104,7 +89,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         minY: s.minY,
                         maxY: s.maxY,
                         step: s.step,
-                        xLabels: SampleData.weekdays,
                         height: 250,
                         strokeWidth: 4,
                       ),
@@ -114,22 +98,68 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
+          _StatisticalSummary(stats: s.summary),
+        ],
+      ),
+    );
+  }
+}
 
-          // Guide accordion (expanded by default in Figma)
-          AccordionCard(
-            title: s.guideTitle,
-            titleStyle: AppText.sf(22, weight: FontWeight.w700),
-            headerHeight: 56,
-            initiallyExpanded: true,
-            body: ParameterGuide(
-              entries: s.guide,
-              currentValue: value,
-              valueSize: s.guideValueSize,
-            ),
+class _StatisticalSummary extends StatelessWidget {
+  const _StatisticalSummary({required this.stats});
+
+  final SummaryStats stats;
+
+  @override
+  Widget build(BuildContext context) {
+    return SurfaceCard(
+      padding: const EdgeInsets.fromLTRB(35, 19, 16, 22),
+      child: Column(
+        children: [
+          Text('Statistical Summary',
+              style: AppText.sf(20, weight: FontWeight.w600)),
+          const SizedBox(height: 28),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _Stat(value: stats.average, label: 'Average Reading')),
+              Expanded(child: _Stat(value: stats.median, label: 'Median Reading')),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _Stat(value: stats.minimum, label: 'Minimum Range')),
+              Expanded(child: _Stat(value: stats.maximum, label: 'Maximum Range')),
+            ],
           ),
         ],
       ),
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat({required this.value, required this.label});
+
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(value, style: AppText.sf(30, weight: FontWeight.w700)),
+        ),
+        const SizedBox(height: 2),
+        Text(label, style: AppText.sf(15)),
+      ],
     );
   }
 }
