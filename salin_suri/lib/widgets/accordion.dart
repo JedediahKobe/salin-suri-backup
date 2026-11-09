@@ -110,12 +110,22 @@ class _AccordionCardState extends State<AccordionCard>
               child: SizedBox(
                 height: widget.headerHeight,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: EdgeInsets.only(
+                      left: 11,
+                      right: 8,
+                      // Figma Monitoring Chart Card: title sits 17px from the top,
+                      // chevron (24px) shares that baseline.
+                      top: widget.subtitle != null ? 17 : 0),
                   child: Row(
+                    crossAxisAlignment: widget.subtitle != null
+                        ? CrossAxisAlignment.start
+                        : CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment: widget.subtitle != null
+                              ? MainAxisAlignment.start
+                              : MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -124,7 +134,7 @@ class _AccordionCardState extends State<AccordionCard>
                                   AppText.sf(17, weight: FontWeight.w500),
                             ),
                             if (widget.subtitle != null) ...[
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 7),
                               Text(
                                 widget.subtitle!,
                                 style:
@@ -137,8 +147,9 @@ class _AccordionCardState extends State<AccordionCard>
                       // chevron-down (collapsed) rotates 180deg into chevron-up (expanded)
                       RotationTransition(
                         turns: Tween<double>(begin: 0, end: 0.5).animate(_curved),
-                        child: const Icon(Icons.keyboard_arrow_down_rounded,
-                            color: Colors.white, size: 28),
+                        child: Icon(Icons.keyboard_arrow_down_rounded,
+                            color: Colors.white,
+                            size: widget.subtitle != null ? 24 : 28),
                       ),
                     ],
                   ),

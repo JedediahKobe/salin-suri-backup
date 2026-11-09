@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../data/sample_data.dart';
 import '../data/sensor_specs.dart';
 import '../theme/app_theme.dart';
-import '../widgets/accordion.dart';
 import '../widgets/common.dart';
-import '../widgets/line_chart.dart';
+import 'history_screen.dart';
 import 'notification_screen.dart';
 import 'sensors_screen.dart';
 
@@ -119,35 +117,83 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 28),
 
-          // ── Monitoring insights (accordion) ───────────────────
+          // ── Monitoring insights (Figma 603:272...: tappable link cards) ──
           const SectionTitle('Monitoring Insights'),
           const SizedBox(height: 10),
-          AccordionGroup(
-            initialIndex: 0, // first one expanded, the rest collapsed, as in Figma
-            items: [
-              AccordionItemData(
-                title: 'pH Level Monitoring',
-                subtitle: 'Monitor pH Level changes',
-                body: _InsightChart(spec: SensorSpec.ph),
-              ),
-              AccordionItemData(
-                title: 'Water Temperature Monitoring',
-                subtitle: 'Monitor temperature changes',
-                body: _InsightChart(spec: SensorSpec.temperature),
-              ),
-              AccordionItemData(
-                title: 'Turbidity Monitoring',
-                subtitle: 'Monitor turbidity changes',
-                body: _InsightChart(spec: SensorSpec.turbidity),
-              ),
-              AccordionItemData(
-                title: 'TDS Monitoring',
-                subtitle: 'Monitor TDS changes',
-                body: _InsightChart(spec: SensorSpec.tds),
-              ),
-            ],
-          ),
+          for (final item in _insights) ...[
+            _InsightLinkCard(
+              title: item.title,
+              subtitle: item.subtitle,
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => HistoryScreen(spec: item.spec))),
+            ),
+            const SizedBox(height: 15),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _Insight {
+  const _Insight(this.title, this.subtitle, this.spec);
+
+  final String title;
+  final String subtitle;
+  final SensorSpec spec;
+}
+
+const _insights = <_Insight>[
+  _Insight('pH Level Monitoring', 'Monitoring ph Level changes', SensorSpec.ph),
+  _Insight('Water Temperature Monitoring', 'Monitoring temperature changes',
+      SensorSpec.temperature),
+  _Insight('Turbidity Monitoring', 'Monitoring turbidity changes',
+      SensorSpec.turbidity),
+  _Insight('TDS Monitoring', 'Monitoring TDS changes', SensorSpec.tds),
+];
+
+/// 385x80 card, r10, with title/subtitle and a chevron-right.
+class _InsightLinkCard extends StatelessWidget {
+  const _InsightLinkCard(
+      {required this.title, required this.subtitle, required this.onTap});
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(10),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: 80,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 10, right: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.inter(18, weight: FontWeight.w500)),
+                      const SizedBox(height: 9),
+                      Text(subtitle, style: AppText.inter(12)),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded,
+                    color: Colors.white, size: 28),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -182,61 +228,6 @@ class _StatusCard extends StatelessWidget {
           Text(caption, style: AppText.inter(12)),
         ],
       ),
-    );
-  }
-}
-
-/// Expanded body of an insight accordion: chart + Pre/Post legend.
-class _InsightChart extends StatelessWidget {
-  const _InsightChart({required this.spec});
-
-  final SensorSpec spec;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-      child: Column(
-        children: [
-          LineChart(
-            series: SampleData.preAndPost(spec.preSeries, spec.postSeries),
-            minY: spec.minY,
-            maxY: spec.maxY,
-            step: spec.step,
-            height: 250,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              _Legend(color: AppColors.preSeries, label: 'Pre-Filtration'),
-              SizedBox(width: 40),
-              _Legend(color: AppColors.postSeries, label: 'Post-Filtration'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Legend extends StatelessWidget {
-  const _Legend({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-            width: 7,
-            height: 7,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-        const SizedBox(width: 8),
-        Text(label, style: AppText.sf(12)),
-      ],
     );
   }
 }
