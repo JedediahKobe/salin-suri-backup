@@ -95,11 +95,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 12),
+                _StatisticalSummary(
+                    stats: isPre ? s.preSummary : s.postSummary),
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          _StatisticalSummary(stats: s.summary),
         ],
       ),
     );

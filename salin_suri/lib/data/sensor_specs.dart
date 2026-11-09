@@ -47,7 +47,8 @@ class SensorSpec {
     required this.preSeries,
     required this.postSeries,
     required this.historyChartTitle,
-    required this.summary,
+    required this.preSummary,
+    required this.postSummary,
     required this.limitLabel,
     required this.limitValue,
     required this.statusLabel,
@@ -92,8 +93,10 @@ class SensorSpec {
   final String historyTitle;
   final String historyChartTitle;
 
-  /// Statistical Summary card (Figma 614:676...): average, median, minimum, maximum.
-  final SummaryStats summary;
+  /// Statistical Summary card (Figma 614:676...): average, median, minimum, maximum,
+  /// for the Pre- and Post-filtration tabs (post values are dummy).
+  final SummaryStats preSummary;
+  final SummaryStats postSummary;
   final String limitLabel; // "Reference Range" | "PNSDW 2017"
   final String limitValue;
   final String statusLabel; // "Range" | "Status"
@@ -126,7 +129,8 @@ class SensorSpec {
   static const ph = SensorSpec(
     id: 'ph',
     historyChartTitle: 'pH Level Chart',
-    summary: SummaryStats(average: '7.4', median: '7.2', minimum: '6.5', maximum: '8.5'),
+    preSummary: SummaryStats(average: '7.4', median: '7.2', minimum: '6.5', maximum: '8.5'),
+    postSummary: SummaryStats(average: '7.1', median: '7.0', minimum: '6.5', maximum: '8.5'),
     pageTitle: 'ph Sensor',
     heading: 'pH Level',
     historyTitle: 'ph Level Insight',
@@ -163,7 +167,8 @@ class SensorSpec {
   static const temperature = SensorSpec(
     id: 'temperature',
     historyChartTitle: 'Temperature Level Chart',
-    summary: SummaryStats(average: '27.4 °C', median: '26.2 °C', minimum: '--', maximum: '--'),
+    preSummary: SummaryStats(average: '27.4 °C', median: '26.2 °C', minimum: '--', maximum: '--'),
+    postSummary: SummaryStats(average: '27.0 °C', median: '26.0 °C', minimum: '--', maximum: '--'),
     pageTitle: 'Temperature Sensor',
     heading: 'Temperature Sensor',
     historyTitle: 'Temperature Level Insight',
@@ -198,7 +203,8 @@ class SensorSpec {
   static const turbidity = SensorSpec(
     id: 'turbidity',
     historyChartTitle: 'Turbidity Level Chart (NTU)',
-    summary: SummaryStats(average: '1.4 NTU', median: '1.3 NTU', minimum: '--', maximum: '5 NTU'),
+    preSummary: SummaryStats(average: '1.4 NTU', median: '1.3 NTU', minimum: '--', maximum: '5 NTU'),
+    postSummary: SummaryStats(average: '0.6 NTU', median: '0.5 NTU', minimum: '--', maximum: '5 NTU'),
     pageTitle: 'Turbidity Sensor',
     heading: 'Turbidity Sensor',
     historyTitle: 'Turbidity Level Insight',
@@ -234,7 +240,8 @@ class SensorSpec {
   static const tds = SensorSpec(
     id: 'tds',
     historyChartTitle: 'TDS Level Chart (mg/L)',
-    summary: SummaryStats(average: '276 mg/L', median: '278 mg/L', minimum: '--', maximum: '600 mg/L'),
+    preSummary: SummaryStats(average: '276 mg/L', median: '278 mg/L', minimum: '--', maximum: '600 mg/L'),
+    postSummary: SummaryStats(average: '158 mg/L', median: '160 mg/L', minimum: '--', maximum: '600 mg/L'),
     pageTitle: 'TDS Sensor',
     heading: 'TDS Sensor',
     historyTitle: 'TDS Level Insight',
