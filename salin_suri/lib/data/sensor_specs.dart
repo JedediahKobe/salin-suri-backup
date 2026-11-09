@@ -56,8 +56,6 @@ class SensorSpec {
     required this.guideTitle,
     required this.guide,
     this.guideValueSize = 25,
-    this.insightPre,
-    this.insightPost,
   });
 
   final String id;
@@ -104,11 +102,6 @@ class SensorSpec {
   final String guideTitle;
   final List<GuideEntry> guide;
   final double guideValueSize;
-
-  /// Series for the Home "Monitoring Insights" card when it differs from the Sensor Page
-  /// series (pH only, Figma 64:92).
-  final List<double>? insightPre;
-  final List<double>? insightPost;
 
   String format(double v) => '${v.toStringAsFixed(decimals)}$unit';
 
@@ -160,8 +153,6 @@ class SensorSpec {
     historyPost: 7.2,
     historyPreSeries: [7.9, 9.1, 8.4, 6.8, 8.1, 8.15, 7.8],
     historyPostSeries: [7.2, 7.5, 7.3, 7.0, 7.4, 7.2, 7.1],
-    insightPre: [10, 9.5, 8.4, 8.85, 9.3, 9.0, 8.3, 9.2, 9.4, 9.65, 8.9, 8.65, 8.3, 7.95, 8.65, 8.5, 8.95],
-    insightPost: [9.0, 8.55, 7.3, 7.45, 7.6, 6.95, 8.2, 8.45, 8.65, 7.9, 7.0, 6.9, 6.75, 6.05, 7.45, 8.0],
     guideTitle: 'pH Level Guide',
     guide: [
       GuideEntry(6.0, '6.0', 'Slightly Acidic', 'Below neutral.'),
