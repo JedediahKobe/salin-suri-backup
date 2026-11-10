@@ -29,8 +29,12 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: AppTheme.isDark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
+      child: Container(
+      decoration: BoxDecoration(
         color: AppColors.bar,
         border: Border(bottom: BorderSide(color: AppColors.barBorder)),
       ),
@@ -55,6 +59,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -85,7 +90,7 @@ class CircleChip extends StatelessWidget {
       child: Container(
         width: size,
         height: size,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
             color: AppColors.iconChip, shape: BoxShape.circle),
         child: Stack(
           alignment: Alignment.center,
@@ -135,13 +140,13 @@ class SurfaceCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(16),
-    this.color = AppColors.surface,
+    this.color,
     this.radius = 15,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
-  final Color color;
+  final Color? color;
   final double radius;
 
   @override
@@ -150,7 +155,7 @@ class SurfaceCard extends StatelessWidget {
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-        color: color,
+        color: color ?? AppColors.surface,
         borderRadius: BorderRadius.circular(radius),
       ),
       child: child,
@@ -183,7 +188,7 @@ class DropdownPill extends StatelessWidget {
       padding: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: Color(0xFF909090), width: 0.5),
+        side: BorderSide(color: AppColors.divider, width: 0.5),
       ),
       itemBuilder: (_) => [
         for (final o in options)
@@ -203,7 +208,7 @@ class DropdownPill extends StatelessWidget {
             Text(value,
                 style: AppText.inter(11,
                     weight: FontWeight.w500, color: AppColors.accent)),
-            const Icon(Icons.keyboard_arrow_down_rounded,
+            Icon(Icons.keyboard_arrow_down_rounded,
                 size: 14, color: AppColors.accent),
           ],
         ),
@@ -228,13 +233,13 @@ class StatsPanel extends StatelessWidget {
   const StatsPanel({
     super.key,
     required this.cells,
-    this.color = AppColors.surface,
+    this.color,
     this.header,
     this.height = 100,
   });
 
   final List<StatCell> cells;
-  final Color color;
+  final Color? color;
   final Widget? header;
   final double height;
 
@@ -245,7 +250,7 @@ class StatsPanel extends StatelessWidget {
         children: [
           for (var i = 0; i < cells.length; i++) ...[
             if (i > 0)
-              const VerticalDivider(
+              VerticalDivider(
                   width: 1, thickness: 1, color: AppColors.divider),
             Expanded(
               child: Column(
@@ -265,7 +270,7 @@ class StatsPanel extends StatelessWidget {
     );
 
     return SurfaceCard(
-      color: color,
+      color: color ?? AppColors.surface,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       child: header == null
           ? row
@@ -313,7 +318,7 @@ class PillNavBar extends StatelessWidget {
                     onTap: () => onTap(i),
                     child: TweenAnimationBuilder<Color?>(
                       tween: ColorTween(
-                          end: i == index ? AppColors.accent : Colors.white),
+                          end: i == index ? AppColors.accent : AppColors.text),
                       duration: const Duration(milliseconds: 200),
                       builder: (context, color, _) => Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -324,7 +329,7 @@ class PillNavBar extends StatelessWidget {
                               clipBehavior: Clip.none,
                               children: [
                                 AppIcon(_items[i].$1,
-                                    color: color ?? Colors.white, size: 30),
+                                    color: color ?? AppColors.text, size: 30),
                                 // Red dot only while something is unread.
                                 if (i == _bellIndex &&
                                     NotificationStore.instance.hasUnread)

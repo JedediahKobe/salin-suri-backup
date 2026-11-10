@@ -65,12 +65,12 @@ class SensorCard extends StatelessWidget {
                 Container(
                   width: 36,
                   height: 36,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                       color: AppColors.iconChip, shape: BoxShape.circle),
-                  child: Icon(info.icon, size: 20, color: Colors.white),
+                  child: Icon(info.icon, size: 20, color: AppColors.text),
                 ),
-                const Icon(Icons.chevron_right_rounded,
-                    color: Colors.white, size: 24),
+                Icon(Icons.chevron_right_rounded,
+                    color: AppColors.text, size: 24),
               ],
             ),
             const Spacer(),

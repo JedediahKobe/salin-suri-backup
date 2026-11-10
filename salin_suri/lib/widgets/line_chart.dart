@@ -127,7 +127,7 @@ class _LineChartPainter extends CustomPainter {
         leftPad, topPad, size.width - rightPad, size.height - bottomPad);
 
     final grid = Paint()
-      ..color = Colors.white
+      ..color = AppColors.text
       ..strokeWidth = 1;
 
     // Gridlines + y labels

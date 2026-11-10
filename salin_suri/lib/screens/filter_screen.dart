@@ -114,7 +114,7 @@ class _FilterScreenState extends State<FilterScreen> {
                               Expanded(
                                   child: _InfoColumn(
                                       title: 'Purpose', body: m.purpose)),
-                              const VerticalDivider(
+                              VerticalDivider(
                                   width: 24,
                                   thickness: 1,
                                   color: AppColors.divider),

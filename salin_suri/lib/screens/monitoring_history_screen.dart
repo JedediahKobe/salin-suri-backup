@@ -22,19 +22,20 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
 
   int _tab = 0;
   String _query = '';
-  bool _newestFirst = false; // Figma lists oldest first
+  _DateFilter? _dateFilter; // null = all dates
 
   List<FiltrationRecord> get _visible {
     final q = _query.trim().toLowerCase();
     final list = FiltrationRecord.all.where((r) {
       if (_tab == 1 && !r.isPre) return false;
       if (_tab == 2 && r.isPre) return false;
+      if (_dateFilter != null && !_dateFilter!.matches(r.daysAgo)) return false;
       return q.isEmpty ||
           r.title.toLowerCase().contains(q) ||
           r.time.toLowerCase().contains(q) ||
           r.stage.toLowerCase().contains(q);
     }).toList();
-    return _newestFirst ? list.reversed.toList() : list;
+    return list;
   }
 
   @override
@@ -63,8 +64,8 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.search_rounded,
-                          size: 16, color: Color(0xFFB7B7B7)),
+                      Icon(Icons.search_rounded,
+                          size: 16, color: AppColors.muted),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextField(
@@ -76,7 +77,7 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
                             border: InputBorder.none,
                             hintText: 'Search',
                             hintStyle:
-                                AppText.sf(12, color: const Color(0xFFB7B7B7)),
+                                AppText.sf(12, color: AppColors.muted),
                           ),
                         ),
                       ),
@@ -85,15 +86,44 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
                 ),
               ),
               const SizedBox(width: 5),
-              // Sort button: toggles oldest/newest first.
-              GestureDetector(
-                onTap: () => setState(() => _newestFirst = !_newestFirst),
+              // "filter date" menu (Figma 641:211).
+              PopupMenuButton<_DateFilter>(
+                tooltip: 'Filter by date',
+                offset: const Offset(0, 44),
+                color: AppColors.surface,
+                elevation: 0,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 105),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(color: AppColors.divider, width: 0.5),
+                ),
+                onSelected: (f) => setState(
+                    () => _dateFilter = _dateFilter == f ? null : f),
+                itemBuilder: (_) => [
+                  for (final f in _DateFilter.values)
+                    PopupMenuItem(
+                      value: f,
+                      height: 27,
+                      child: Center(
+                        child: Text(f.label,
+                            style: AppText.inter(11,
+                                weight: FontWeight.w500,
+                                color: AppColors.accent)),
+                      ),
+                    ),
+                ],
                 child: Container(
                   width: 40,
                   height: 40,
-                  decoration: const BoxDecoration(
-                      color: AppColors.iconChip, shape: BoxShape.circle),
-                  child: const Icon(Icons.filter_list_rounded,
+                  decoration: BoxDecoration(
+                    color: AppColors.iconChip,
+                    shape: BoxShape.circle,
+                    border: _dateFilter == null
+                        ? null
+                        : Border.all(color: AppColors.accent),
+                  ),
+                  child: Icon(Icons.filter_list_rounded,
                       color: AppColors.accent, size: 22),
                 ),
               ),
@@ -120,6 +150,22 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
       ),
     );
   }
+}
+
+enum _DateFilter {
+  week('7 days'),
+  month('30 days'),
+  older('More than 30 days');
+
+  const _DateFilter(this.label);
+
+  final String label;
+
+  bool matches(int daysAgo) => switch (this) {
+        week => daysAgo <= 7,
+        month => daysAgo <= 30,
+        older => daysAgo > 30,
+      };
 }
 
 class _RecordCard extends StatelessWidget {
@@ -156,7 +202,7 @@ class _RecordCard extends StatelessWidget {
                           style: AppText.sf(20, weight: FontWeight.w700)),
                       Text(record.time,
                           style: AppText.sf(13,
-                              color: const Color(0xFFB8B8B8))),
+                              color: AppColors.muted)),
                     ],
                   ),
                 ),

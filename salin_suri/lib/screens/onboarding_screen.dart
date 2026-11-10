@@ -187,9 +187,9 @@ class _MiniCard extends StatelessWidget {
       child: Row(
         children: [
           _cell('Pre-Filtration', Text(pre, style: AppText.inter(17, weight: FontWeight.w600))),
-          const VerticalDivider(width: 1, color: AppColors.divider, indent: 14, endIndent: 14),
+          VerticalDivider(width: 1, color: AppColors.divider, indent: 14, endIndent: 14),
           _cell('Post Filtration', Text(post, style: AppText.sf(17, weight: FontWeight.w600))),
-          const VerticalDivider(width: 1, color: AppColors.divider, indent: 14, endIndent: 14),
+          VerticalDivider(width: 1, color: AppColors.divider, indent: 14, endIndent: 14),
           _cell(
             'Change',
             Row(

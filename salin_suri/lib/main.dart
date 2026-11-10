@@ -21,11 +21,40 @@ class _SalinSuriAppState extends State<SalinSuriApp> {
   bool _onboarded = false; // persist with shared_preferences in a real app
 
   @override
+  void initState() {
+    super.initState();
+    AppTheme.mode.addListener(_onThemeChanged);
+  }
+
+  @override
+  void dispose() {
+    AppTheme.mode.removeListener(_onThemeChanged);
+    super.dispose();
+  }
+
+  void _onThemeChanged() {
+    setState(() {});
+    // Colours are read from AppColors while building, so widgets that don't depend on
+    // Theme (including const ones) must be rebuilt too. This keeps navigation and
+    // state intact, unlike re-keying the whole app.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      void rebuild(Element e) {
+        e.markNeedsBuild();
+        e.visitChildren(rebuild);
+      }
+
+      (context as Element).visitChildren(rebuild);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Salin-Suri',
       debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
+      theme: buildAppTheme(Brightness.light),
+      darkTheme: buildAppTheme(Brightness.dark),
+      themeMode: AppTheme.mode.value,
       home: _onboarded
           ? const AppShell()
           : OnboardingScreen(onFinished: () => setState(() => _onboarded = true)),

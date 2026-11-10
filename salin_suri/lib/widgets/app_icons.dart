@@ -2,21 +2,23 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 enum AppIconType { home, filter, bell, settings, bulb, history }
 
 /// Outline icons drawn to match the Figma navigation bar (house with door, funnel, bell,
 /// cog). 24-unit grid, 2px round stroke, so they stay crisp at any size.
 class AppIcon extends StatelessWidget {
-  const AppIcon(this.type, {super.key, this.color = Colors.white, this.size = 30});
+  const AppIcon(this.type, {super.key, this.color, this.size = 30});
 
   final AppIconType type;
-  final Color color;
+  final Color? color;
   final double size;
 
   @override
   Widget build(BuildContext context) => CustomPaint(
         size: Size.square(size),
-        painter: _IconPainter(type, color),
+        painter: _IconPainter(type, color ?? AppColors.text),
       );
 }
 

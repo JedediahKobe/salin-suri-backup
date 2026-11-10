@@ -62,7 +62,7 @@ class ModalShell extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF909090), width: 0.5),
+                border: Border.all(color: AppColors.divider, width: 0.5),
               ),
               child: Stack(
                 children: [
@@ -79,11 +79,11 @@ class ModalShell extends StatelessWidget {
                         child: Container(
                           width: 26,
                           height: 26,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                               color: AppColors.iconChip,
                               shape: BoxShape.circle),
-                          child: const Icon(Icons.close_rounded,
-                              size: 15, color: Colors.white),
+                          child: Icon(Icons.close_rounded,
+                              size: 15, color: AppColors.text),
                         ),
                       ),
                     ),
