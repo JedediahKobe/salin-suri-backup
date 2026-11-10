@@ -10,7 +10,7 @@ class HistoryDetailsScreen extends StatelessWidget {
 
   final FiltrationRecord record;
 
-  static const _grey = Color(0xFFB8B8B8);
+  static Color get _grey => AppColors.muted;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class HistoryDetailsScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 20),
-                          const Divider(
+                          Divider(
                               height: 1, thickness: 1, color: AppColors.divider),
                           const SizedBox(height: 20),
                           Row(
@@ -84,7 +84,7 @@ class HistoryDetailsScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           Text.rich(
                             TextSpan(
-                              style: AppText.sf(16, color: const Color(0xFFB7B7B7)),
+                              style: AppText.sf(16, color: AppColors.muted),
                               children: [
                                 TextSpan(
                                     text:
@@ -102,7 +102,7 @@ class HistoryDetailsScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           Text(
                             'Note: These parameters are not only the sole basis to determine water is safe to drink.',
-                            style: AppText.sf(11, color: const Color(0xFFB7B7B7)),
+                            style: AppText.sf(11, color: AppColors.muted),
                           ),
                         ],
                       ),

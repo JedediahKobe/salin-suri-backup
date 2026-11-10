@@ -57,9 +57,9 @@ class _SensorPageState extends State<SensorPage> {
                 child: Container(
                   width: 48,
                   height: 48,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                       color: AppColors.iconChip, shape: BoxShape.circle),
-                  child: const Center(
+                  child: Center(
                     child: AppIcon(AppIconType.history,
                         color: AppColors.accent, size: 28),
                   ),

@@ -11,7 +11,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _darkMode = true;
   bool _notifications = true;
 
   @override
@@ -36,8 +35,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _Row(
                 label: 'Dark Mode',
                 trailing: AppToggle(
-                  value: _darkMode,
-                  onChanged: (v) => setState(() => _darkMode = v),
+                  value: AppTheme.isDark,
+                  onChanged: (v) => AppTheme.mode.value =
+                      v ? ThemeMode.dark : ThemeMode.light,
                 ),
               ),
               _Row(
@@ -94,7 +94,7 @@ class _Section extends StatelessWidget {
               children: [
                 for (var i = 0; i < rows.length; i++) ...[
                   if (i > 0)
-                    const Divider(height: 1, thickness: 1, color: AppColors.divider),
+                    Divider(height: 1, thickness: 1, color: AppColors.divider),
                   InkWell(
                     onTap: rows[i].onTap,
                     child: SizedBox(
@@ -105,8 +105,8 @@ class _Section extends StatelessWidget {
                           Text(rows[i].label,
                               style: AppText.sf(16, weight: FontWeight.w500)),
                           rows[i].trailing ??
-                              const Icon(Icons.chevron_right_rounded,
-                                  size: 16, color: Colors.white),
+                              Icon(Icons.chevron_right_rounded,
+                                  size: 16, color: AppColors.text),
                         ],
                       ),
                     ),

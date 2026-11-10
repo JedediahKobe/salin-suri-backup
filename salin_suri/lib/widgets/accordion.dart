@@ -148,7 +148,7 @@ class _AccordionCardState extends State<AccordionCard>
                       RotationTransition(
                         turns: Tween<double>(begin: 0, end: 0.5).animate(_curved),
                         child: Icon(Icons.keyboard_arrow_down_rounded,
-                            color: Colors.white,
+                            color: AppColors.text,
                             size: widget.subtitle != null ? 24 : 28),
                       ),
                     ],

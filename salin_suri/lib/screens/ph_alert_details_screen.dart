@@ -12,7 +12,7 @@ class PhAlertDetailsScreen extends StatelessWidget {
 
   static const _reading = 9.8;
   static const _recorded = '27/10/26 at 9:10 am';
-  static const _grey = Color(0xFFB8B8B8);
+  static Color get _grey => AppColors.muted;
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +82,7 @@ class PhAlertDetailsScreen extends StatelessWidget {
                       style: AppText.sf(13, weight: FontWeight.w600),
                     ),
                     const SizedBox(height: 14),
-                    const Divider(height: 1, thickness: 1, color: AppColors.divider),
+                    Divider(height: 1, thickness: 1, color: AppColors.divider),
                     const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,

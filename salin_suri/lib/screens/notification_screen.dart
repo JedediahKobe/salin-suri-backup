@@ -73,7 +73,7 @@ class _AlertTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Unread: white semibold. Read: grey #B8B8B8 regular.
-    final color = alert.unread ? Colors.white : const Color(0xFFB8B8B8);
+    final color = alert.unread ? AppColors.text : AppColors.muted;
     final weight = alert.unread ? FontWeight.w600 : FontWeight.w400;
     return InkWell(
       onTap: onTap,
@@ -85,7 +85,7 @@ class _AlertTile extends StatelessWidget {
             Container(
               width: 48,
               height: 48,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                   color: AppColors.iconChip, shape: BoxShape.circle),
               child: const Icon(Icons.error_outline_rounded,
                   color: AppColors.alertRed, size: 32),
@@ -113,7 +113,7 @@ class _AlertTile extends StatelessWidget {
                       textAlign: TextAlign.justify,
                       style: AppText.sf(13, weight: weight, color: color)),
                   const SizedBox(height: 12),
-                  const Divider(height: 1, thickness: 1, color: AppColors.divider),
+                  Divider(height: 1, thickness: 1, color: AppColors.divider),
                 ],
               ),
             ),

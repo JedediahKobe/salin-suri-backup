@@ -19,6 +19,12 @@ class FiltrationRecord {
   final double turbidity;
   final double tds;
 
+  /// Age relative to [referenceDate], used by the "filter date" menu.
+  int get daysAgo => referenceDate.difference(DateTime(2026, 10, 26)).inDays;
+
+  /// Dummy "today" for the sample data (the records are all from 26/10/26).
+  static final referenceDate = DateTime(2026, 10, 27);
+
   String get title => 'Filtration #$number';
   String get stage => isPre ? 'Pre-filtration' : 'Post-filtration';
 
