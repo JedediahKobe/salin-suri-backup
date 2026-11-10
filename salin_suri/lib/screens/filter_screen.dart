@@ -63,10 +63,20 @@ class _FilterScreenState extends State<FilterScreen> {
                 onPageChanged: (i) => setState(() => _page = i),
                 itemBuilder: (_, i) {
                   final m = _materials[i];
-                  return Column(
+                  // Scrolls instead of overflowing when the screen is short or the
+                  // purpose text wraps onto extra lines.
+                  return LayoutBuilder(
+                    builder: (context, constraints) => SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints:
+                            BoxConstraints(minHeight: constraints.maxHeight),
+                        child: IntrinsicHeight(
+                          child: Column(
                     children: [
                       Expanded(
-                        child: Stack(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 150),
+                          child: Stack(
                           alignment: Alignment.center,
                           children: [
                             AssetOrIcon(
@@ -86,6 +96,7 @@ class _FilterScreenState extends State<FilterScreen> {
                                   onTap: () => _go(1)),
                             ),
                           ],
+                          ),
                         ),
                       ),
                       FittedBox(
@@ -94,7 +105,7 @@ class _FilterScreenState extends State<FilterScreen> {
                             textAlign: TextAlign.center,
                             style: AppText.poppins(28)),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 24),
                       SurfaceCard(
                         padding: const EdgeInsets.all(20),
                         child: IntrinsicHeight(
@@ -115,8 +126,12 @@ class _FilterScreenState extends State<FilterScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 90),
+                      const SizedBox(height: 24),
                     ],
+                          ),
+                        ),
+                      ),
+                    ),
                   );
                 },
               ),

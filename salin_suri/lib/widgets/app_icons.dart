@@ -109,33 +109,28 @@ class _IconPainter extends CustomPainter {
         p);
   }
 
-  /// Lightbulb with light rays: the bulb is scaled down to leave room for the rays.
+  /// Lightbulb with five light rays (top, both diagonals, both sides).
   void _bulb(Canvas c, Paint p) {
-    c.save();
-    c.translate(12, 13);
-    c.scale(0.78);
-    c.translate(-12, -12);
+    // Globe: a large arc over the top, closed flat at the bottom.
     c.drawPath(
         Path()
-          ..moveTo(15, 14)
-          ..cubicTo(15.2, 13, 15.7, 12.3, 16.5, 11.5)
-          ..cubicTo(17.5, 10.6, 18, 9.3, 18, 8)
-          ..arcToPoint(const Offset(6, 8),
-              radius: const Radius.circular(6), clockwise: false)
-          ..cubicTo(6, 9, 6.2, 10.2, 7.5, 11.5)
-          ..cubicTo(8.2, 12.2, 8.8, 13, 9, 14)
+          ..moveTo(9.3, 15.6)
+          ..arcToPoint(const Offset(14.7, 15.6),
+              radius: const Radius.circular(5.2),
+              largeArc: true,
+              clockwise: true)
           ..close(),
         p);
-    c.drawLine(const Offset(9, 18), const Offset(15, 18), p);
-    c.drawLine(const Offset(10, 22), const Offset(14, 22), p);
-    c.restore();
-    // Rays (top, upper diagonals, sides) around the globe.
-    const cx = 12.0, cy = 9.9;
+    // Screw base.
+    c.drawLine(const Offset(9.9, 18.2), const Offset(14.1, 18.2), p);
+    c.drawLine(const Offset(10.8, 20.6), const Offset(13.2, 20.6), p);
+    // Rays around the globe (centre 12, 11.16).
+    const cx = 12.0, cy = 11.16;
     for (final deg in [-90, -135, -45, 180, 0]) {
       final a = deg * math.pi / 180;
       c.drawLine(
-        Offset(cx + 6.8 * math.cos(a), cy + 6.8 * math.sin(a)),
-        Offset(cx + 8.8 * math.cos(a), cy + 8.8 * math.sin(a)),
+        Offset(cx + 7.6 * math.cos(a), cy + 7.6 * math.sin(a)),
+        Offset(cx + 9.8 * math.cos(a), cy + 9.8 * math.sin(a)),
         p,
       );
     }
@@ -147,7 +142,7 @@ class _IconPainter extends CustomPainter {
         Path()
           ..moveTo(3, 12)
           ..arcToPoint(const Offset(12, 3),
-              radius: const Radius.circular(9), largeArc: true, clockwise: true)
+              radius: const Radius.circular(9), largeArc: true, clockwise: false)
           ..arcToPoint(const Offset(5.26, 5.74),
               radius: const Radius.circular(9.75), clockwise: false)
           ..lineTo(3, 8),
