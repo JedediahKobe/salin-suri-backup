@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'data/app_prefs.dart';
 import 'screens/filter_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/notification_screen.dart';
@@ -8,7 +9,11 @@ import 'screens/settings_screen.dart';
 import 'theme/app_theme.dart';
 import 'widgets/common.dart';
 
-void main() => runApp(const SalinSuriApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppPrefs.load();
+  runApp(const SalinSuriApp());
+}
 
 class SalinSuriApp extends StatefulWidget {
   const SalinSuriApp({super.key});
@@ -18,7 +23,7 @@ class SalinSuriApp extends StatefulWidget {
 }
 
 class _SalinSuriAppState extends State<SalinSuriApp> {
-  bool _onboarded = false; // persist with shared_preferences in a real app
+  bool _onboarded = AppPrefs.onboarded;
 
   @override
   void initState() {
@@ -33,6 +38,7 @@ class _SalinSuriAppState extends State<SalinSuriApp> {
   }
 
   void _onThemeChanged() {
+    AppPrefs.setThemeMode(AppTheme.mode.value);
     setState(() {});
     // Colours are read from AppColors while building, so widgets that don't depend on
     // Theme (including const ones) must be rebuilt too. This keeps navigation and
@@ -57,7 +63,10 @@ class _SalinSuriAppState extends State<SalinSuriApp> {
       themeMode: AppTheme.mode.value,
       home: _onboarded
           ? const AppShell()
-          : OnboardingScreen(onFinished: () => setState(() => _onboarded = true)),
+          : OnboardingScreen(onFinished: () {
+              AppPrefs.setOnboarded(true);
+              setState(() => _onboarded = true);
+            }),
     );
   }
 }
