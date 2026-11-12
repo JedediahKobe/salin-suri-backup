@@ -4,6 +4,7 @@ import '../data/filter_materials.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
+import 'maintenance_history_screen.dart';
 
 /// Filtration screen: a carousel of [FilterMaterial] cards (Figma Filter Media Card
 /// 112:1075). The lightbulb opens the current material's info modal (134:*).
@@ -35,7 +36,15 @@ class _FilterScreenState extends State<FilterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppTopBar(title: 'Salin-Suri'),
+      appBar: AppTopBar(
+        title: 'Salin-Suri',
+        // Entry to Maintenance History (689:169).
+        trailing: CircleChip(
+          appIcon: AppIconType.history,
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => const MaintenanceHistoryScreen())),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(14, 16, 14, 110),
         child: Column(
