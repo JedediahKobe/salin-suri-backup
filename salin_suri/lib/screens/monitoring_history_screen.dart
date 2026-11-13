@@ -75,7 +75,7 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
                           decoration: InputDecoration(
                             isDense: true,
                             border: InputBorder.none,
-                            hintText: 'Search',
+                            hintText: 'Search date or filtration number',
                             hintStyle:
                                 AppText.sf(12, color: AppColors.muted),
                           ),

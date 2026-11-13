@@ -442,3 +442,36 @@ class AppToggle extends StatelessWidget {
     );
   }
 }
+
+/// Radio dot from the Figma "Radio Button" component (726:134): green ring, with a
+/// filled centre when selected.
+class AppRadio extends StatelessWidget {
+  const AppRadio({super.key, required this.selected, this.onTap});
+
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: 20,
+        height: 20,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.accent, width: 2),
+        ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: selected ? 10 : 0,
+          height: selected ? 10 : 0,
+          decoration:
+              BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
+        ),
+      ),
+    );
+  }
+}

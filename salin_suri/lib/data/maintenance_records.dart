@@ -1,12 +1,36 @@
 import 'package:flutter/foundation.dart';
 
 /// A maintenance entry (Figma Maintenance History 689:169 / details 689:298).
-/// Dummy data until a real source exists; new entries come from the Add Maintenance sheet.
+/// Dummy data until a real source exists.
 class MaintenanceRecord {
-  const MaintenanceRecord({required this.number, required this.when});
+  MaintenanceRecord({
+    required this.number,
+    required this.when,
+    this.replaced,
+    this.recordedAt,
+  });
 
   final int number;
   final DateTime when;
+
+  /// "Maintenance Documentation" answer (Figma 726:157): has the filter media been
+  /// replaced? null = not answered yet.
+  bool? replaced;
+  DateTime? recordedAt;
+
+  /// Saves the Yes/No answer and stamps "Recorded at ...".
+  void document(bool value) {
+    replaced = value;
+    recordedAt = DateTime.now();
+    store.value = [...store.value]; // notify listeners
+  }
+
+  String get recordedText => 'Recorded at ${_short(recordedAt!)}';
+
+  static String _short(DateTime d) {
+    final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
+    return '${d.day}/${d.month}/${_two(d.year % 100)}, $h:${_two(d.minute)}${d.hour < 12 ? 'am' : 'pm'}';
+  }
 
   String get title => 'Maintenance #$number';
 
@@ -29,11 +53,15 @@ class MaintenanceRecord {
 
   static String _two(int n) => n.toString().padLeft(2, '0');
 
-  /// Newest first. Mutable so the Add Maintenance sheet can prepend.
+  /// Newest first.
   static final ValueNotifier<List<MaintenanceRecord>> store =
-      ValueNotifier(<MaintenanceRecord>[
+      ValueNotifier<List<MaintenanceRecord>>(<MaintenanceRecord>[
     MaintenanceRecord(number: 136, when: DateTime(2026, 11, 2, 16, 55)),
-    MaintenanceRecord(number: 135, when: DateTime(2026, 11, 1, 11, 10)),
+    MaintenanceRecord(
+        number: 135,
+        when: DateTime(2026, 11, 1, 11, 10),
+        replaced: true,
+        recordedAt: DateTime(2026, 11, 1, 11, 43)),
     MaintenanceRecord(number: 134, when: DateTime(2026, 10, 31, 18, 20)),
     MaintenanceRecord(number: 133, when: DateTime(2026, 10, 30, 15, 0)),
     MaintenanceRecord(number: 132, when: DateTime(2026, 10, 29, 13, 45)),
@@ -41,12 +69,4 @@ class MaintenanceRecord {
     MaintenanceRecord(number: 130, when: DateTime(2026, 10, 27, 8, 0)),
     MaintenanceRecord(number: 129, when: DateTime(2026, 10, 26, 17, 15)),
   ]);
-
-  static void add(DateTime when) {
-    final list = store.value;
-    final next = list.isEmpty ? 1 : list.first.number + 1;
-    final updated = [MaintenanceRecord(number: next, when: when), ...list]
-      ..sort((a, b) => b.when.compareTo(a.when));
-    store.value = updated;
-  }
 }

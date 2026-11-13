@@ -4,11 +4,10 @@ import '../data/maintenance_records.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
-import '../widgets/modals/add_maintenance_sheet.dart';
 import 'maintenance_details_screen.dart';
 import 'monitoring_history_screen.dart' show DateFilter;
 
-/// Maintenance History (Figma 689:169): search, add (+), date filter, and a list of
+/// Maintenance History (Figma 689:169): search, date filter, and a list of
 /// maintenance entries that open their report (689:298).
 class MaintenanceHistoryScreen extends StatefulWidget {
   const MaintenanceHistoryScreen({super.key});
@@ -66,7 +65,7 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
                               decoration: InputDecoration(
                                 isDense: true,
                                 border: InputBorder.none,
-                                hintText: 'Search',
+                                hintText: 'Search date or maintenance number',
                                 hintStyle:
                                     AppText.sf(12, color: AppColors.muted),
                               ),
@@ -75,12 +74,6 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  _RoundButton(
-                    child: Icon(Icons.add_rounded,
-                        color: AppColors.accent, size: 24),
-                    onTap: () => showAddMaintenanceSheet(context),
                   ),
                   const SizedBox(width: 6),
                   PopupMenuButton<DateFilter>(
@@ -145,27 +138,6 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _RoundButton extends StatelessWidget {
-  const _RoundButton({required this.child, required this.onTap});
-
-  final Widget child;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration:
-            BoxDecoration(color: AppColors.iconChip, shape: BoxShape.circle),
-        child: child,
       ),
     );
   }
