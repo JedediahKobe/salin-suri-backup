@@ -18,6 +18,21 @@ class MaintenanceDetailsScreen extends StatefulWidget {
 class _MaintenanceDetailsScreenState extends State<MaintenanceDetailsScreen> {
   MaintenanceRecord get record => widget.record;
 
+  /// Pending selection before Submit (Yes / No); null until the user picks one.
+  bool? _choice;
+
+  void _submit() {
+    final yes = _choice!;
+    setState(() {
+      if (yes) record.document(true);
+      _choice = null;
+    });
+    if (!yes) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Maintenance status kept as pending.')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,8 +56,11 @@ class _MaintenanceDetailsScreenState extends State<MaintenanceDetailsScreen> {
                             children: [
                               Text('Maintenance Report',
                                   style: AppText.sf(24, weight: FontWeight.w700)),
-                              Text(record.reportTime,
-                                  style: AppText.sf(13, color: AppColors.divider)),
+                              Text(record.completed ? 'Completed' : 'Required',
+                                  style: AppText.sf(13,
+                                      color: record.completed
+                                          ? AppColors.accent
+                                          : AppColors.alert)),
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -52,16 +70,24 @@ class _MaintenanceDetailsScreenState extends State<MaintenanceDetailsScreen> {
                           Text(
                             'This notification documents the need of replacement of filter materials. '
                             'Based on the post-filtration report it is recommended that the '
-                            'filtration media needs to be replaced. ',
+                            'filtration media needs to be replaced.',
                             style: AppText.sf(18, color: AppColors.muted),
                           ),
+                          const SizedBox(height: 20),
+                          Divider(
+                              height: 1, thickness: 1, color: AppColors.divider),
+                          const SizedBox(height: 20),
+                          Text('Notified at ${record.reportTime}',
+                              style: AppText.sf(13, color: AppColors.muted)),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
                     _DocumentationCard(
                       record: record,
-                      onChanged: (v) => setState(() => record.document(v)),
+                      choice: _choice,
+                      onChanged: (v) => setState(() => _choice = v),
+                      onSubmit: _submit,
                     ),
                   ],
                 ),
@@ -92,16 +118,28 @@ class _MaintenanceDetailsScreenState extends State<MaintenanceDetailsScreen> {
   }
 }
 
-/// "Maintenance Documentation" card (Figma 726:157): Yes / No radios and the time the
-/// answer was recorded.
+/// "Maintenance Documentation" card (Figma 689:298 pending, 726:150 completed).
+/// Pending: Yes / No radios and a Submit button once one is chosen. Completed: a locked
+/// summary, since an answered report can't be edited.
 class _DocumentationCard extends StatelessWidget {
-  const _DocumentationCard({required this.record, required this.onChanged});
+  const _DocumentationCard({
+    required this.record,
+    required this.choice,
+    required this.onChanged,
+    required this.onSubmit,
+  });
 
   final MaintenanceRecord record;
+  final bool? choice;
   final ValueChanged<bool> onChanged;
+  final VoidCallback onSubmit;
 
   @override
   Widget build(BuildContext context) {
+    final divider = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Divider(height: 1, thickness: 1, color: AppColors.divider),
+    );
     return SurfaceCard(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -109,27 +147,55 @@ class _DocumentationCard extends StatelessWidget {
         children: [
           Text('Maintenance Documentation',
               style: AppText.sf(24, weight: FontWeight.w700)),
-          const SizedBox(height: 20),
-          Divider(height: 1, thickness: 1, color: AppColors.divider),
-          const SizedBox(height: 20),
-          Text('The replacement of filtration has been already conducted',
-              style: AppText.sf(18, color: AppColors.muted)),
-          const SizedBox(height: 20),
-          _Option(
-              label: 'Yes',
-              selected: record.replaced == true,
-              onTap: () => onChanged(true)),
-          const SizedBox(height: 20),
-          _Option(
-              label: 'No',
-              selected: record.replaced == false,
-              onTap: () => onChanged(false)),
-          if (record.recordedAt != null) ...[
+          divider,
+          if (record.completed) ...[
+            Text('The replacement of filtration has been already conducted',
+                style: AppText.sf(18, color: AppColors.muted)),
             const SizedBox(height: 20),
-            Divider(height: 1, thickness: 1, color: AppColors.divider),
-            const SizedBox(height: 20),
+            _Row('Status', 'Completed', AppColors.accent),
+            const SizedBox(height: 12),
+            _Row('Date', record.recordedDate, AppColors.text),
+            const SizedBox(height: 12),
+            _Row('Confirmation', 'Yes', AppColors.accent),
+            divider,
             Text(record.recordedText,
-                style: AppText.sf(13, color: AppColors.divider)),
+                style: AppText.sf(13, color: AppColors.muted)),
+          ] else ...[
+            Text('Please confirm whether the filter replacement has been conducted.',
+                style: AppText.sf(18, color: AppColors.muted)),
+            const SizedBox(height: 20),
+            _Option(
+                label: 'Yes, replacement completed',
+                sub: 'Proceed to record replacement details.',
+                selected: choice == true,
+                onTap: () => onChanged(true)),
+            const SizedBox(height: 20),
+            _Option(
+                label: 'No, not yet recorded',
+                sub: 'Keep the maintenance status pending.',
+                selected: choice == false,
+                onTap: () => onChanged(false)),
+            if (choice != null) ...[
+              divider,
+              Center(
+                child: SizedBox(
+                  width: 340,
+                  height: 40,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(40)),
+                    ),
+                    onPressed: onSubmit,
+                    child: Text('Submit',
+                        style: AppText.sf(18, weight: FontWeight.w600)),
+                  ),
+                ),
+              ),
+            ],
           ],
         ],
       ),
@@ -137,11 +203,33 @@ class _DocumentationCard extends StatelessWidget {
   }
 }
 
-class _Option extends StatelessWidget {
-  const _Option(
-      {required this.label, required this.selected, required this.onTap});
+class _Row extends StatelessWidget {
+  const _Row(this.label, this.value, this.valueColor);
 
   final String label;
+  final String value;
+  final Color valueColor;
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: AppText.sf(18, color: AppColors.muted)),
+          Text(value, style: AppText.sf(18, weight: FontWeight.w600, color: valueColor)),
+        ],
+      );
+}
+
+class _Option extends StatelessWidget {
+  const _Option({
+    required this.label,
+    required this.sub,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final String sub;
   final bool selected;
   final VoidCallback onTap;
 
@@ -151,11 +239,23 @@ class _Option extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(width: 10),
-          AppRadio(selected: selected, onTap: onTap),
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: AppRadio(selected: selected, onTap: onTap),
+          ),
           const SizedBox(width: 10),
-          Text(label, style: AppText.sf(18, weight: FontWeight.w600)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppText.sf(18, weight: FontWeight.w600)),
+                Text(sub, style: AppText.sf(14, color: AppColors.muted)),
+              ],
+            ),
+          ),
         ],
       ),
     );

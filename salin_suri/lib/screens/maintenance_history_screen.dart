@@ -4,8 +4,9 @@ import '../data/maintenance_records.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
+import '../widgets/date_filter_button.dart';
 import 'maintenance_details_screen.dart';
-import 'monitoring_history_screen.dart' show DateFilter;
+
 
 /// Maintenance History (Figma 689:169): search, date filter, and a list of
 /// maintenance entries that open their report (689:298).
@@ -42,6 +43,8 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
           return ListView(
             padding: const EdgeInsets.fromLTRB(11, 15, 11, 24),
             children: [
+              const _SummaryCard(),
+              const SizedBox(height: 15),
               Row(
                 children: [
                   Expanded(
@@ -76,45 +79,9 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
                     ),
                   ),
                   const SizedBox(width: 6),
-                  PopupMenuButton<DateFilter>(
-                    tooltip: 'Filter by date',
-                    offset: const Offset(0, 44),
-                    color: AppColors.surface,
-                    elevation: 0,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 105),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: AppColors.divider, width: 0.5),
-                    ),
-                    onSelected: (f) => setState(
-                        () => _dateFilter = _dateFilter == f ? null : f),
-                    itemBuilder: (_) => [
-                      for (final f in DateFilter.values)
-                        PopupMenuItem(
-                          value: f,
-                          height: 27,
-                          child: Center(
-                            child: Text(f.label,
-                                style: AppText.inter(11,
-                                    weight: FontWeight.w500,
-                                    color: AppColors.accent)),
-                          ),
-                        ),
-                    ],
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.iconChip,
-                        shape: BoxShape.circle,
-                        border: _dateFilter == null
-                            ? null
-                            : Border.all(color: AppColors.accent),
-                      ),
-                      child: Icon(Icons.filter_list_rounded,
-                          color: AppColors.accent, size: 22),
-                    ),
+                  DateFilterButton(
+                    value: _dateFilter,
+                    onChanged: (f) => setState(() => _dateFilter = f),
                   ),
                 ],
               ),
@@ -143,6 +110,56 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
   }
 }
 
+/// "No. of Maintenance Report" totals (Figma 689:169).
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final done = MaintenanceRecord.completedCount;
+    final pending = MaintenanceRecord.pendingCount;
+    return SurfaceCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('No. of Maintenance Report',
+              style: AppText.sf(18, weight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Divider(height: 1, thickness: 1, color: AppColors.divider),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _Stat(done, 'Completed'),
+              _Stat(pending, 'Pending'),
+              _Stat(done + pending, 'Total Records'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat(this.value, this.label);
+
+  final int value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+        child: Column(
+          children: [
+            Text('$value', style: AppText.sf(35, weight: FontWeight.w700)),
+            Text(label,
+                style: AppText.sf(15,
+                    weight: FontWeight.w500, color: AppColors.muted)),
+          ],
+        ),
+      );
+}
+
 class _MaintenanceCard extends StatelessWidget {
   const _MaintenanceCard({required this.record, required this.onTap});
 
@@ -151,34 +168,35 @@ class _MaintenanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final done = record.completed;
     return Material(
       color: AppColors.surface,
       borderRadius: BorderRadius.circular(15),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: SizedBox(
-          height: 83,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(13, 12, 14, 10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(record.title,
-                          style: AppText.sf(20, weight: FontWeight.w700)),
-                      Text(record.time,
-                          style: AppText.sf(13, color: AppColors.muted)),
-                    ],
-                  ),
-                ),
-                Icon(Icons.chevron_right_rounded,
-                    size: 28, color: AppColors.text),
-              ],
-            ),
+        child: Container(
+          height: 73,
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(record.title,
+                    style: AppText.sf(20, weight: FontWeight.w700)),
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(done ? 'Completed' : 'Pending',
+                      style: AppText.sf(10,
+                          color: done ? AppColors.accent : AppColors.alert)),
+                  const SizedBox(height: 4),
+                  Text(record.time,
+                      style: AppText.sf(10, color: AppColors.muted)),
+                ],
+              ),
+            ],
           ),
         ),
       ),

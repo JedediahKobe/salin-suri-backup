@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/app_prefs.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
+import 'filtration_bin_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -27,6 +28,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             rows: [
               _Row(label: 'Device Connection', onTap: () {}),
               _Row(label: 'Device Information', onTap: () {}),
+              _Row(label: 'About Salin-Suri', onTap: () {}),
             ],
           ),
           _Section(
@@ -51,7 +53,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
               ),
-              _Row(label: 'About Salin-Suri', onTap: () {}),
+              _Row(
+                label: 'Archived Records',
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) =>
+                        const FiltrationBinScreen(kind: BinKind.archived))),
+              ),
+              _Row(
+                label: 'Recently Deleted',
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) =>
+                        const FiltrationBinScreen(kind: BinKind.deleted))),
+              ),
             ],
           ),
           _Section(

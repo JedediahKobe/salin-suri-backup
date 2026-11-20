@@ -27,7 +27,7 @@ class PhAlertDetailsScreen extends StatelessWidget {
             : 'Pre-filtration pH is within the reference range.';
 
     return Scaffold(
-      appBar: const AppTopBar(title: 'pH Alert Details', showBack: true),
+      appBar: const AppTopBar(title: 'pH Level Alert Details', showBack: true),
       body: SafeArea(
         top: false,
         child: Padding(

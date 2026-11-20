@@ -12,11 +12,15 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.showBack = false,
     this.trailing,
+    this.leading,
   });
 
   final String title;
   final bool showBack;
   final Widget? trailing;
+
+  /// Replaces the back button (e.g. the selection-mode check on Filtration History).
+  final Widget? leading;
 
   static const double _barHeight = 56;
 
@@ -48,7 +52,9 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
             children: [
               Text(title,
                   style: AppText.sf(20, weight: FontWeight.w900)),
-              if (showBack)
+              if (leading != null)
+                Positioned(left: 15, child: leading!)
+              else if (showBack)
                 Positioned(
                   left: 15,
                   child: CircleChip(
@@ -471,6 +477,36 @@ class AppRadio extends StatelessWidget {
           decoration:
               BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
         ),
+      ),
+    );
+  }
+}
+
+/// Selection checkbox for list rows (Figma "check" component, 873:413): a green ring,
+/// filled with a check mark when selected.
+class AppCheck extends StatelessWidget {
+  const AppCheck({super.key, required this.selected, this.onTap});
+
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: selected ? AppColors.accent : Colors.transparent,
+          border: Border.all(color: AppColors.accent, width: 1.5),
+        ),
+        child: selected
+            ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+            : null,
       ),
     );
   }
