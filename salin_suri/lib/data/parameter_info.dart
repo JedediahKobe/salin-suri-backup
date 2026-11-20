@@ -70,6 +70,21 @@ class ParameterInfo {
       body: 'No limit specified.',
     ),
   ]);
+
+  static const waterFlow = ParameterInfo(title: 'About Water Flow', steps: [
+    InfoStep(
+      heading: 'What is water flow?',
+      body: 'Flow rate is the volume of water passing through a pipe per unit of time.',
+    ),
+    InfoStep(
+      heading: 'Why does it matter?',
+      body: 'Tracking flow helps monitor water use. Changes may signal leaks or a clogged filter.',
+    ),
+    InfoStep(
+      heading: 'How is it measured?',
+      body: 'Flow rate is measured in liters per minute (L/min). Total volume is measured in liters (L).',
+    ),
+  ]);
 }
 
 Future<void> showParameterInfoModal(BuildContext context, ParameterInfo info) =>

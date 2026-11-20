@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/sensor_specs.dart';
-import '../main.dart' show AppShell;
-import '../data/notification_store.dart';
 import '../theme/app_theme.dart';
-import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
 import 'history_screen.dart';
 import 'sensors_screen.dart';
@@ -26,15 +23,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppTopBar(
         title: 'Salin-Suri',
-        trailing: ListenableBuilder(
-          listenable: NotificationStore.instance,
-          builder: (context, _) => CircleChip(
-            appIcon: AppIconType.bell,
-            dot: NotificationStore.instance.hasUnread,
-          // Notification is a tab in the shell now.
-          onTap: () => AppShell.of(context)?.select(2),
-          ),
-        ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(10, 14, 10, 110),

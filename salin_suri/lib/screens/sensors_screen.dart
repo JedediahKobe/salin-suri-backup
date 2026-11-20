@@ -6,16 +6,20 @@ import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
 import '../data/sensor_specs.dart';
 import 'notification_screen.dart';
+import 'flow_sensor_page.dart';
 import 'sensor_page.dart';
 
 class SensorInfo {
-  const SensorInfo(this.name, this.icon, this.specId);
+  const SensorInfo(this.name, this.icon, this.specId, {this.isFlow = false});
 
   final String name;
   final IconData icon;
 
   /// Matches a [SensorSpec.id]; null = no detail design yet (Water Flow).
   final String? specId;
+
+  /// Water Flow has its own page (Figma 676:122) instead of a [SensorSpec].
+  final bool isFlow;
 
   SensorSpec? get spec => specId == null ? null : SensorSpec.byId(specId!);
 
@@ -24,7 +28,7 @@ class SensorInfo {
     SensorInfo('pH Level', Icons.water_drop_outlined, 'ph'),
     SensorInfo('Turbidity', Icons.grain_rounded, 'turbidity'),
     SensorInfo('Total Dissolved\nSolids (TDS)', Icons.opacity_outlined, 'tds'),
-    SensorInfo('Water Flow', Icons.waves_rounded, null),
+    SensorInfo('Water Flow', Icons.waves_rounded, null, isFlow: true),
   ];
 }
 
@@ -44,10 +48,13 @@ class SensorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: info.spec == null
-          ? null
-          : () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => SensorPage(spec: info.spec!))),
+      onTap: info.isFlow
+          ? () => Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const FlowSensorPage()))
+          : info.spec == null
+              ? null
+              : () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => SensorPage(spec: info.spec!))),
       child: Container(
         width: width,
         height: 133,

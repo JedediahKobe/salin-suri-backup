@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/app_prefs.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 
@@ -11,7 +12,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _notifications = true;
+  bool _notifications = AppPrefs.notifications;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +45,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 label: 'Notifications',
                 trailing: AppToggle(
                   value: _notifications,
-                  onChanged: (v) => setState(() => _notifications = v),
+                  onChanged: (v) {
+                    AppPrefs.setNotifications(v);
+                    setState(() => _notifications = v);
+                  },
                 ),
               ),
               _Row(label: 'About Salin-Suri', onTap: () {}),

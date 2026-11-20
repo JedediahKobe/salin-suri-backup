@@ -7,7 +7,7 @@ import '../widgets/common.dart';
 import '../widgets/segmented_tabs.dart';
 import 'history_details_screen.dart';
 
-/// Monitoring History (Figma 623:831): All / Pre / Post tabs, search, and a list of
+/// Filtration History (Figma 623:831): All / Pre / Post tabs, search, and a list of
 /// filtration runs that open their report (623:954).
 class MonitoringHistoryScreen extends StatefulWidget {
   const MonitoringHistoryScreen({super.key});
@@ -22,7 +22,7 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
 
   int _tab = 0;
   String _query = '';
-  _DateFilter? _dateFilter; // null = all dates
+  DateFilter? _dateFilter; // null = all dates
 
   List<FiltrationRecord> get _visible {
     final q = _query.trim().toLowerCase();
@@ -42,7 +42,7 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
   Widget build(BuildContext context) {
     final items = _visible;
     return Scaffold(
-      appBar: const AppTopBar(title: 'Monitoring History', showBack: true),
+      appBar: const AppTopBar(title: 'Filtration History', showBack: true),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(11, 11, 11, 24),
         children: [
@@ -87,7 +87,7 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
               ),
               const SizedBox(width: 5),
               // "filter date" menu (Figma 641:211).
-              PopupMenuButton<_DateFilter>(
+              PopupMenuButton<DateFilter>(
                 tooltip: 'Filter by date',
                 offset: const Offset(0, 44),
                 color: AppColors.surface,
@@ -101,7 +101,7 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
                 onSelected: (f) => setState(
                     () => _dateFilter = _dateFilter == f ? null : f),
                 itemBuilder: (_) => [
-                  for (final f in _DateFilter.values)
+                  for (final f in DateFilter.values)
                     PopupMenuItem(
                       value: f,
                       height: 27,
@@ -152,12 +152,12 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
   }
 }
 
-enum _DateFilter {
+enum DateFilter {
   week('7 days'),
   month('30 days'),
   older('More than 30 days');
 
-  const _DateFilter(this.label);
+  const DateFilter(this.label);
 
   final String label;
 
@@ -210,7 +210,7 @@ class _RecordCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(record.stage,
+                    Text(record.isPre ? 'Pre-Filtration' : 'Post-Filtration',
                         style: AppText.sf(10,
                             color: record.isPre ? _preColor : _postColor)),
                     Padding(
