@@ -28,7 +28,7 @@ class NotificationStore extends ChangeNotifier {
 
   final alerts = <AlertItem>[
     AlertItem(
-      title: 'pH Level Alert',
+      title: 'Pre Filtration Alert',
       body:
           'pH Level Outside Reference Range Pre-filtration pH reached 9.8, which is above the...',
       time: '27/10/26, 9:10 am',
@@ -36,7 +36,7 @@ class NotificationStore extends ChangeNotifier {
       opensPhDetails: true,
     ),
     AlertItem(
-      title: 'Turbidity Level Alert',
+      title: 'Post Filtration Alert',
       body:
           'High Turbidity Detected Post-filtration turbidity spiked to 4.2 NTU, exceeding the 1.0 NTU thr...',
       time: '26/10/26, 3:45 pm',

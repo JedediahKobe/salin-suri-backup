@@ -55,16 +55,23 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 28),
 
           // ── Live dashboard ────────────────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text('Live Dashboard', style: AppText.sf(22, weight: FontWeight.w700)),
-              Text('September 24 • 10:37 am',
-                  style: AppText.sf(12, weight: FontWeight.w500, color: AppColors.muted)),
-            ],
+          SizedBox(
+            height: 32,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Live Dashboard',
+                    style: AppText.sf(22, weight: FontWeight.w700)),
+                // Shows the Offline badge instead when the device is disconnected.
+                const StatusBadge(connected: true),
+              ],
+            ),
           ),
-          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Text('Last Updated: September 24 • 10:37 am',
+                style: AppText.sf(12, weight: FontWeight.w500, color: AppColors.muted)),
+          ),
           SegmentedTabs(
             labels: const ['Pre-filtration', 'Post-filtration'],
             selectedIndex: _isPre ? 0 : 1,

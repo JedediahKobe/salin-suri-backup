@@ -20,7 +20,7 @@ class HistoryDetailsScreen extends StatelessWidget {
         '${r.turbidityText}, and TDS ${r.tdsText}.';
 
     return Scaffold(
-      appBar: const AppTopBar(title: 'Monitoring History', showBack: true),
+      appBar: AppTopBar(title: r.title, showBack: true),
       body: SafeArea(
         top: false,
         child: Padding(
@@ -39,8 +39,11 @@ class HistoryDetailsScreen extends StatelessWidget {
                             children: [
                               Text('Monitoring Report',
                                   style: AppText.sf(20, weight: FontWeight.w700)),
-                              Text(r.time,
-                                  style: AppText.sf(13, color: _grey)),
+                              Text(r.isPre ? 'Pre-Filtration' : 'Post-Filtration',
+                                  style: AppText.sf(12,
+                                      color: r.isPre
+                                          ? const Color(0xFF6097FC)
+                                          : const Color(0xFF2BFF00))),
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -69,6 +72,12 @@ class HistoryDetailsScreen extends StatelessWidget {
                               Expanded(
                                   child: _Reading(value: r.tdsText, label: 'TDS')),
                             ],
+                          ),
+                          const SizedBox(height: 20),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text('Notified at ${r.time}',
+                                style: AppText.sf(13, color: AppColors.divider)),
                           ),
                         ],
                       ),
@@ -119,7 +128,7 @@ class HistoryDetailsScreen extends StatelessWidget {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
+                        borderRadius: BorderRadius.circular(40)),
                   ),
                   // Back to the Monitoring History list.
                   onPressed: () => Navigator.of(context).pop(),

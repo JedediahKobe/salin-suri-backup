@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/notification_store.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
 import 'ph_alert_details_screen.dart';
 
@@ -87,8 +88,8 @@ class _AlertTile extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                   color: AppColors.iconChip, shape: BoxShape.circle),
-              child: const Icon(Icons.error_outline_rounded,
-                  color: AppColors.alertRed, size: 32),
+              child: const AppIcon(AppIconType.circleAlert,
+                  color: AppColors.alertRed, size: 32, strokeWidth: 1.8),
             ),
             const SizedBox(width: 22),
             Expanded(

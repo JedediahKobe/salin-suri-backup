@@ -7,12 +7,13 @@ Future<T?> showAppModal<T>(
   BuildContext context, {
   required WidgetBuilder builder,
   bool barrierDismissible = true,
+  Color barrierColor = Colors.black54,
 }) {
   return showGeneralDialog<T>(
     context: context,
     barrierDismissible: barrierDismissible,
     barrierLabel: 'Dismiss',
-    barrierColor: Colors.black54,
+    barrierColor: barrierColor,
     transitionDuration: const Duration(milliseconds: 220),
     pageBuilder: (ctx, _, __) => builder(ctx),
     transitionBuilder: (ctx, animation, _, child) {

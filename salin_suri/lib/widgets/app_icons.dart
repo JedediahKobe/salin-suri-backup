@@ -4,29 +4,45 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
-enum AppIconType { home, filter, bell, settings, bulb, history }
+enum AppIconType {
+  home,
+  filter,
+  bell,
+  settings,
+  bulb,
+  history,
+  archive,
+  trash,
+  circleCheck,
+  circleAlert,
+  filterLines,
+  search,
+}
 
 /// Outline icons drawn to match the Figma navigation bar (house with door, funnel, bell,
 /// cog). 24-unit grid, 2px round stroke, so they stay crisp at any size.
 class AppIcon extends StatelessWidget {
-  const AppIcon(this.type, {super.key, this.color, this.size = 30});
+  const AppIcon(this.type,
+      {super.key, this.color, this.size = 30, this.strokeWidth = 2});
 
   final AppIconType type;
   final Color? color;
   final double size;
+  final double strokeWidth;
 
   @override
   Widget build(BuildContext context) => CustomPaint(
         size: Size.square(size),
-        painter: _IconPainter(type, color ?? AppColors.text),
+        painter: _IconPainter(type, color ?? AppColors.text, strokeWidth),
       );
 }
 
 class _IconPainter extends CustomPainter {
-  _IconPainter(this.type, this.color);
+  _IconPainter(this.type, this.color, this.strokeWidth);
 
   final AppIconType type;
   final Color color;
+  final double strokeWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -34,7 +50,7 @@ class _IconPainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
     switch (type) {
@@ -59,6 +75,29 @@ class _IconPainter extends CustomPainter {
         _bulb(canvas, paint);
       case AppIconType.history:
         _history(canvas, paint);
+      case AppIconType.archive:
+        _archive(canvas, paint);
+      case AppIconType.trash:
+        _trash(canvas, paint);
+      case AppIconType.circleCheck:
+        canvas.drawCircle(const Offset(12, 12), 9.5, paint);
+        canvas.drawPath(
+            Path()
+              ..moveTo(7.8, 12.4)
+              ..lineTo(10.7, 15.3)
+              ..lineTo(16.4, 9.2),
+            paint);
+      case AppIconType.circleAlert:
+        canvas.drawCircle(const Offset(12, 12), 9.5, paint);
+        canvas.drawLine(const Offset(12, 7.2), const Offset(12, 13), paint);
+        canvas.drawCircle(const Offset(12, 16.4), 0.4, paint);
+      case AppIconType.filterLines:
+        canvas.drawLine(const Offset(4, 7.5), const Offset(20, 7.5), paint);
+        canvas.drawLine(const Offset(7, 12), const Offset(17, 12), paint);
+        canvas.drawLine(const Offset(10, 16.5), const Offset(14, 16.5), paint);
+      case AppIconType.search:
+        canvas.drawCircle(const Offset(10.5, 10.5), 6.5, paint);
+        canvas.drawLine(const Offset(15.5, 15.5), const Offset(21, 21), paint);
     }
   }
 
@@ -138,6 +177,53 @@ class _IconPainter extends CustomPainter {
     }
   }
 
+  /// Archive box: wide lid, body with a handle slot (Figma "bi:archive").
+  void _archive(Canvas c, Paint p) {
+    c.drawRRect(
+        RRect.fromLTRBR(2.5, 4, 21.5, 9, const Radius.circular(1.5)), p);
+    c.drawPath(
+        Path()
+          ..moveTo(4, 9)
+          ..lineTo(4, 17.5)
+          ..arcToPoint(const Offset(6.5, 20),
+              radius: const Radius.circular(2.5), clockwise: true)
+          ..lineTo(17.5, 20)
+          ..arcToPoint(const Offset(20, 17.5),
+              radius: const Radius.circular(2.5), clockwise: true)
+          ..lineTo(20, 9),
+        p);
+    c.drawLine(const Offset(9.5, 13), const Offset(14.5, 13), p);
+  }
+
+  /// Trash can with lid, handle and two slats (Figma "coolicons:trash-full").
+  void _trash(Canvas c, Paint p) {
+    c.drawLine(const Offset(4, 6.5), const Offset(20, 6.5), p);
+    c.drawPath(
+        Path()
+          ..moveTo(9, 6.5)
+          ..lineTo(9, 4.5)
+          ..arcToPoint(const Offset(10, 3.5),
+              radius: const Radius.circular(1), clockwise: true)
+          ..lineTo(14, 3.5)
+          ..arcToPoint(const Offset(15, 4.5),
+              radius: const Radius.circular(1), clockwise: true)
+          ..lineTo(15, 6.5),
+        p);
+    c.drawPath(
+        Path()
+          ..moveTo(5.8, 6.5)
+          ..lineTo(6.8, 19)
+          ..arcToPoint(const Offset(8.8, 20.8),
+              radius: const Radius.circular(2), clockwise: false)
+          ..lineTo(15.2, 20.8)
+          ..arcToPoint(const Offset(17.2, 19),
+              radius: const Radius.circular(2), clockwise: false)
+          ..lineTo(18.2, 6.5),
+        p);
+    c.drawLine(const Offset(10, 10.5), const Offset(10, 16.5), p);
+    c.drawLine(const Offset(14, 10.5), const Offset(14, 16.5), p);
+  }
+
   /// Clock with a counter-clockwise arrow (history).
   void _history(Canvas c, Paint p) {
     c.drawPath(
@@ -188,5 +274,6 @@ class _IconPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_IconPainter old) => old.type != type || old.color != color;
+  bool shouldRepaint(_IconPainter old) =>
+      old.type != type || old.color != color || old.strokeWidth != strokeWidth;
 }

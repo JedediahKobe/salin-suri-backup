@@ -511,3 +511,64 @@ class AppCheck extends StatelessWidget {
     );
   }
 }
+
+
+/// "Status Badge / Connected | Offline" pill (Figma 904:992, 904:1016): a white signal
+/// glyph and a label on a green (connected) or grey (offline) pill.
+class StatusBadge extends StatelessWidget {
+  const StatusBadge({super.key, required this.connected});
+
+  final bool connected;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = connected ? AppColors.accent : AppColors.muted;
+    return Container(
+      height: 23,
+      padding: const EdgeInsets.symmetric(horizontal: 5),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CustomPaint(
+              size: const Size.square(17),
+              painter: _SignalGlyph(bg, slashed: !connected)),
+          const SizedBox(width: 4),
+          Text(connected ? 'Connected' : 'Offline',
+              style: AppText.sf(10, color: Colors.white)),
+        ],
+      ),
+    );
+  }
+}
+
+class _SignalGlyph extends CustomPainter {
+  _SignalGlyph(this.color, {required this.slashed});
+
+  final Color color;
+  final bool slashed;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    canvas.drawCircle(c, size.width / 2, Paint()..color = Colors.white);
+    final p = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(c, 1.2, Paint()..color = color);
+    for (final r in [3.2, 5.2]) {
+      canvas.drawArc(Rect.fromCircle(center: c, radius: r), -0.7, 1.4, false, p);
+      canvas.drawArc(Rect.fromCircle(center: c, radius: r), 3.14159 - 0.7, 1.4, false, p);
+    }
+    if (slashed) {
+      canvas.drawLine(c + const Offset(-5, 5), c + const Offset(5, -5),
+          p..strokeWidth = 1.2);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SignalGlyph old) =>
+      old.color != color || old.slashed != slashed;
+}

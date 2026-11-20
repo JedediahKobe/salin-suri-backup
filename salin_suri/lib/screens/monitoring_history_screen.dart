@@ -5,7 +5,9 @@ import '../theme/app_theme.dart';
 import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
 import '../widgets/date_filter_button.dart';
+import '../widgets/modals/actions_menu.dart';
 import '../widgets/modals/confirm_dialog.dart';
+import '../widgets/swipe_actions.dart';
 import '../widgets/segmented_tabs.dart';
 import 'filtration_bin_screen.dart';
 import 'history_details_screen.dart';
@@ -64,28 +66,12 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
         _selected.clear();
       });
 
-  Future<void> _openMenu(BuildContext anchor) async {
-    final box = anchor.findRenderObject() as RenderBox;
-    final pos = box.localToGlobal(Offset.zero);
-    final choice = await showMenu<String>(
-      context: context,
-      color: AppColors.surface,
-      elevation: 0,
-      position: RelativeRect.fromLTRB(
-          pos.dx - 150, pos.dy + box.size.height + 6, 12, 0),
-      constraints: const BoxConstraints(minWidth: 200, maxWidth: 200),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: BorderSide(color: AppColors.divider, width: 0.5),
-      ),
-      items: [
-        _menuItem('select', 'Select Messages', Icons.check_circle_outline_rounded),
-        const PopupMenuDivider(height: 1),
-        _menuItem('archived', 'Archived Record', Icons.archive_outlined),
-        const PopupMenuDivider(height: 1),
-        _menuItem('deleted', 'Recently Deleted', Icons.delete_outline_rounded),
-      ],
-    );
+  Future<void> _openMenu() async {
+    final choice = await showActionsMenu(context, items: const [
+      ActionsMenuItem('select', 'Select Messages', AppIconType.circleCheck),
+      ActionsMenuItem('archived', 'Archived Record', AppIconType.archive),
+      ActionsMenuItem('deleted', 'Recently Deleted', AppIconType.trash),
+    ]);
     if (!mounted || choice == null) return;
     switch (choice) {
       case 'select':
@@ -99,23 +85,10 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
     }
   }
 
-  PopupMenuItem<String> _menuItem(String value, String label, IconData icon) =>
-      PopupMenuItem(
-        value: value,
-        height: 44,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        child: Row(
-          children: [
-            Expanded(
-                child: Text(label, style: AppText.inter(15, weight: FontWeight.w500))),
-            Icon(icon, size: 20, color: AppColors.text),
-          ],
-        ),
-      );
-
-  Future<void> _apply({required bool delete}) async {
-    if (_selected.isEmpty) return;
-    final many = _selected.length > 1;
+  Future<void> _apply({required bool delete, List<FiltrationRecord>? only}) async {
+    final picked = only ?? _selected.toList();
+    if (picked.isEmpty) return;
+    final many = picked.length > 1;
     final verb = delete ? 'deleted' : 'archived';
     final ok = await showConfirmation(
       context,
@@ -125,9 +98,8 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
       actionLabel: delete ? 'Delete' : 'Archive',
     );
     if (!ok || !mounted) return;
-    final picked = _selected.toList();
     delete ? _store.delete(picked) : _store.archive(picked);
-    _exitSelect();
+    if (_selecting) _exitSelect();
   }
 
   @override
@@ -144,37 +116,8 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
         appBar: AppTopBar(
           title: 'Filtration History',
           showBack: !_selecting,
-          leading: _selecting
-              ? GestureDetector(
-                  onTap: _exitSelect,
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                        color: AppColors.accent, shape: BoxShape.circle),
-                    child: const Icon(Icons.check_rounded,
-                        color: Colors.white, size: 24),
-                  ),
-                )
-              : null,
-          trailing: _selecting
-              ? null
-              : Builder(
-                  builder: (ctx) => GestureDetector(
-                    onTap: () => _openMenu(ctx),
-                    child: Container(
-                      width: 53,
-                      height: 22,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(11),
-                        border: Border.all(color: AppColors.divider, width: 0.5),
-                      ),
-                      child: Text('Edit', style: AppText.sf(11)),
-                    ),
-                  ),
-                ),
+          leading: _selecting ? SelectModeExit(onTap: _exitSelect) : null,
+          trailing: _selecting ? null : EditPill(onTap: _openMenu),
         ),
         body: Column(
           children: [
@@ -200,8 +143,8 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.search_rounded,
-                                  size: 16, color: AppColors.muted),
+                              AppIcon(AppIconType.search,
+                                  size: 16, color: AppColors.muted, strokeWidth: 2),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: TextField(
@@ -250,7 +193,11 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
                           const SizedBox(width: 12),
                         ],
                         Expanded(
-                          child: FiltrationRecordCard(
+                          child: SwipeActionRow(
+                            enabled: !_selecting,
+                            onArchive: () => _apply(delete: false, only: [r]),
+                            onDelete: () => _apply(delete: true, only: [r]),
+                            child: FiltrationRecordCard(
                             record: r,
                             onTap: _selecting
                                 ? () => setState(() => _selected.contains(r)
@@ -261,6 +208,7 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
                                         builder: (_) =>
                                             HistoryDetailsScreen(record: r))),
                           ),
+                          ),
                         ),
                       ],
                     ),
@@ -270,74 +218,24 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
               ),
             ),
             if (_selecting)
-              Container(
-                height: 82,
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                color: AppColors.background,
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => setState(() {
-                        if (allSelected) {
-                          _selected.clear();
-                        } else {
-                          _selected.addAll(items);
-                        }
-                      }),
-                      child: Container(
-                        width: 110,
-                        height: 39,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(allSelected ? 'Deselect All' : 'Select All',
-                            style: AppText.sf(15, weight: FontWeight.w500)),
-                      ),
-                    ),
-                    const Spacer(),
-                    _RoundAction(
-                        icon: Icons.archive_outlined,
-                        enabled: _selected.isNotEmpty,
-                        onTap: () => _apply(delete: false)),
-                    const SizedBox(width: 10),
-                    _RoundAction(
-                        icon: Icons.delete_outline_rounded,
-                        enabled: _selected.isNotEmpty,
-                        onTap: () => _apply(delete: true)),
-                  ],
-                ),
+              SelectionBar(
+                allSelected: allSelected,
+                hasSelection: _selected.isNotEmpty,
+                onToggleAll: () => setState(() {
+                  if (allSelected) {
+                    _selected.clear();
+                  } else {
+                    _selected.addAll(items);
+                  }
+                }),
+                onArchive: () => _apply(delete: false),
+                onDelete: () => _apply(delete: true),
               ),
           ],
         ),
       ),
     );
   }
-}
-
-class _RoundAction extends StatelessWidget {
-  const _RoundAction(
-      {required this.icon, required this.enabled, required this.onTap});
-
-  final IconData icon;
-  final bool enabled;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-        onTap: enabled ? onTap : null,
-        child: Opacity(
-          opacity: enabled ? 1 : 0.4,
-          child: Container(
-            width: 45,
-            height: 45,
-            decoration: BoxDecoration(
-                color: AppColors.surface, shape: BoxShape.circle),
-            child: Icon(icon, size: 22, color: AppColors.text),
-          ),
-        ),
-      );
 }
 
 /// Run card shared by Filtration History and its archived / deleted bins.
@@ -347,8 +245,8 @@ class FiltrationRecordCard extends StatelessWidget {
   final FiltrationRecord record;
   final VoidCallback onTap;
 
-  // Figma tag colors: pre #0059FF, post #2BFF00.
-  static const _preColor = Color(0xFF0059FF);
+  // Figma tag colors: pre #6097FC, post #2BFF00.
+  static const _preColor = Color(0xFF6097FC);
   static const _postColor = Color(0xFF2BFF00);
 
   @override
@@ -384,7 +282,7 @@ class FiltrationRecordCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(record.isPre ? 'Pre-Filtration' : 'Post-Filtration',
-                        style: AppText.sf(10,
+                        style: AppText.sf(11,
                             color: record.isPre ? _preColor : _postColor)),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import 'modal_shell.dart';
 
+/// Where the confirmation card sits on screen.
+const confirmationAlignment = Alignment(0, -0.1);
+
 /// Small confirmation card (Figma Delete / Archive Filtration Confirmation 873:472,
 /// 873:475): a message, a red action button and Cancel. Resolves to true when the
 /// action is confirmed.
@@ -13,7 +16,11 @@ Future<bool> showConfirmation(
 }) async {
   final result = await showAppModal<bool>(
     context,
-    builder: (ctx) => Center(
+    // The card floats at a fixed spot with no dimming background (Figma: standalone
+    // 220x200 card).
+    barrierColor: Colors.transparent,
+    builder: (ctx) => Align(
+      alignment: confirmationAlignment,
       child: Material(
         color: Colors.transparent,
         child: Container(

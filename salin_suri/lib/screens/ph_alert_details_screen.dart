@@ -11,7 +11,7 @@ class PhAlertDetailsScreen extends StatelessWidget {
   const PhAlertDetailsScreen({super.key});
 
   static const _reading = 9.8;
-  static const _recorded = '27/10/26 at 9:10 am';
+  static const _recorded = '27/10/26, 9:10am';
   static Color get _grey => AppColors.muted;
 
   @override
@@ -36,14 +36,26 @@ class PhAlertDetailsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('pH Level Alert', style: AppText.sf(25, weight: FontWeight.w700)),
-              const SizedBox(height: 6),
+              const SizedBox(height: 3),
               Text(summary, style: AppText.sf(14, color: _grey)),
-              const SizedBox(height: 16),
+              const SizedBox(height: 11),
               SurfaceCard(
-                padding: const EdgeInsets.fromLTRB(18, 10, 16, 12),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Pre-Filtration Report',
+                            style: AppText.sf(24, weight: FontWeight.w700)),
+                        Text('Alert',
+                            style: AppText.sf(13, color: AppColors.alert)),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    Divider(height: 1, thickness: 1, color: AppColors.divider),
+                    const SizedBox(height: 15),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -63,10 +75,10 @@ class PhAlertDetailsScreen extends StatelessWidget {
                                 style: AppText.sf(13,
                                     weight: FontWeight.w600,
                                     color: (above || below)
-                                        ? const Color(0xFFFF8585)
+                                        ? AppColors.alert
                                         : AppColors.good),
                               ),
-                              const SizedBox(height: 1),
+                              const SizedBox(height: 3),
                               Text('ph reference range: $min-$max',
                                   style: AppText.sf(13, color: _grey)),
                             ],
@@ -74,25 +86,21 @@ class PhAlertDetailsScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
                     Text(
                       'pH Level Outside Reference Range Pre-filtration pH reached '
                       '${_reading.toStringAsFixed(1)}, which is above the reference range.',
-                      textAlign: TextAlign.justify,
-                      style: AppText.sf(13, weight: FontWeight.w600),
+                      style: AppText.sf(18, weight: FontWeight.w600, color: _grey),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 15),
                     Divider(height: 1, thickness: 1, color: AppColors.divider),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(_recorded,
-                          style: AppText.sf(12, color: _grey)),
-                    ),
+                    const SizedBox(height: 15),
+                    Text('Notified at $_recorded',
+                        style: AppText.sf(13, color: _grey)),
                   ],
                 ),
               ),
-              const SizedBox(height: 33),
+              const SizedBox(height: 11),
               Text('What to check next?',
                   style: AppText.sf(25, weight: FontWeight.w700)),
               const SizedBox(height: 8),

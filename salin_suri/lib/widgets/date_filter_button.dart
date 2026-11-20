@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import 'app_icons.dart';
 
 /// Options of the date-range menu (Figma "Date Range Filter" 641:211).
 enum DateFilter {
@@ -62,7 +63,9 @@ class DateFilterButton extends StatelessWidget {
           shape: BoxShape.circle,
           border: value == null ? null : Border.all(color: AppColors.accent),
         ),
-        child: Icon(Icons.filter_list_rounded, color: AppColors.accent, size: 22),
+        alignment: Alignment.center,
+        child: AppIcon(AppIconType.filterLines,
+            color: AppColors.accent, size: 24, strokeWidth: 1.8),
       ),
     );
   }

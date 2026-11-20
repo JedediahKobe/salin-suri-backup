@@ -73,6 +73,26 @@ class MaintenanceRecord {
   static int get pendingCount =>
       _basePending + store.value.where((r) => !r.completed).length;
 
+  static final ValueNotifier<List<MaintenanceRecord>> archived =
+      ValueNotifier<List<MaintenanceRecord>>(<MaintenanceRecord>[]);
+  static final ValueNotifier<List<MaintenanceRecord>> deleted =
+      ValueNotifier<List<MaintenanceRecord>>(<MaintenanceRecord>[]);
+
+  static void _move(Iterable<MaintenanceRecord> records,
+      ValueNotifier<List<MaintenanceRecord>> to) {
+    final list = records.toSet();
+    store.value = store.value.where((r) => !list.contains(r)).toList();
+    to.value = [...list, ...to.value];
+  }
+
+  static void archive(Iterable<MaintenanceRecord> r) => _move(r, archived);
+  static void delete(Iterable<MaintenanceRecord> r) => _move(r, deleted);
+
+  static void restore(MaintenanceRecord r, ValueNotifier<List<MaintenanceRecord>> from) {
+    from.value = from.value.where((x) => x != r).toList();
+    store.value = [...store.value, r]..sort((a, b) => b.number.compareTo(a.number));
+  }
+
   /// Newest first.
   static final ValueNotifier<List<MaintenanceRecord>> store =
       ValueNotifier<List<MaintenanceRecord>>(<MaintenanceRecord>[
