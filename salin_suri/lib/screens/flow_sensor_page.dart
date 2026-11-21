@@ -41,16 +41,8 @@ class FlowSensorPage extends StatelessWidget {
           const SizedBox(height: 30),
           SectionTitle(
             'Real-time Monitoring',
-            trailing: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => showSensorStatusModal(context),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text('Sensor Status',
-                    style: AppText.sf(11,
-                        weight: FontWeight.w500, color: AppColors.accent)),
-              ),
-            ),
+            trailing:
+                SensorStatusPill(onTap: () => showSensorStatusModal(context)),
           ),
           const SizedBox(height: 12),
           StatsPanel(

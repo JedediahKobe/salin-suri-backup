@@ -144,20 +144,22 @@ class _SwipeActionRowState extends State<SwipeActionRow> {
 
 /// "Edit" pill at the right of the top bar (Figma 873:172, 892:611).
 class EditPill extends StatelessWidget {
-  const EditPill({super.key, required this.onTap});
+  const EditPill({super.key, required this.onTap, this.width = 53, this.height = 22});
 
   final VoidCallback onTap;
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) => GestureDetector(
         onTap: onTap,
         child: Container(
-          width: 53,
-          height: 22,
+          width: width,
+          height: height,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: AppColors.surface,
-            borderRadius: BorderRadius.circular(11),
+            borderRadius: BorderRadius.circular(height / 2),
             border: Border.all(color: AppColors.divider, width: 0.5),
           ),
           child: Text('Edit', style: AppText.sf(11)),
@@ -194,8 +196,10 @@ class SelectionBar extends StatelessWidget {
     required this.onToggleAll,
     required this.onArchive,
     required this.onDelete,
+    this.topBorder = false,
   });
 
+  final bool topBorder;
   final bool allSelected;
   final bool hasSelection;
   final VoidCallback onToggleAll;
@@ -206,18 +210,23 @@ class SelectionBar extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         height: 82,
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        color: AppColors.background,
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          border: topBorder
+              ? Border(top: BorderSide(color: AppColors.barBorder))
+              : null,
+        ),
         child: Row(
           children: [
             GestureDetector(
               onTap: onToggleAll,
               child: Container(
-                width: 110,
-                height: 39,
+                width: 120,
+                height: 45,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppColors.surfaceInner,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(40),
                   border: Border.all(color: AppColors.barBorder, width: 0.5),
                 ),
                 child: Text(allSelected ? 'Deselect All' : 'Select All',
@@ -229,7 +238,7 @@ class SelectionBar extends StatelessWidget {
                 type: AppIconType.archive,
                 enabled: hasSelection,
                 onTap: onArchive),
-            const SizedBox(width: 17),
+            const SizedBox(width: 10),
             RoundActionButton(
                 type: AppIconType.trash,
                 enabled: hasSelection,

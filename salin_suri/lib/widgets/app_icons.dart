@@ -15,6 +15,7 @@ enum AppIconType {
   trash,
   circleCheck,
   circleAlert,
+  mailRead,
   filterLines,
   search,
 }
@@ -91,6 +92,22 @@ class _IconPainter extends CustomPainter {
         canvas.drawCircle(const Offset(12, 12), 9.5, paint);
         canvas.drawLine(const Offset(12, 7.2), const Offset(12, 13), paint);
         canvas.drawCircle(const Offset(12, 16.4), 0.4, paint);
+      case AppIconType.mailRead:
+        canvas.drawPath(
+            Path()
+              ..moveTo(3, 7.5)
+              ..lineTo(3, 18)
+              ..lineTo(21, 18)
+              ..lineTo(21, 11),
+            paint);
+        canvas.drawPath(
+            Path()
+              ..moveTo(3, 7.5)
+              ..lineTo(12, 13.5)
+              ..lineTo(17, 10.2),
+            paint);
+        canvas.drawLine(const Offset(3, 7.5), const Offset(14, 7.5), paint);
+        canvas.drawCircle(const Offset(19.5, 6), 2, Paint()..color = color);
       case AppIconType.filterLines:
         canvas.drawLine(const Offset(4, 7.5), const Offset(20, 7.5), paint);
         canvas.drawLine(const Offset(7, 12), const Offset(17, 12), paint);

@@ -17,6 +17,10 @@ class ActionsMenuItem {
 Future<String?> showActionsMenu(
   BuildContext context, {
   required List<ActionsMenuItem> items,
+  FontWeight weight = FontWeight.w500,
+  Alignment alignment = Alignment.topRight,
+  double left = 12,
+  int dividerBefore = 1,
 }) {
   final top = MediaQuery.of(context).padding.top + 56 + 4;
   return showGeneralDialog<String>(
@@ -26,9 +30,9 @@ Future<String?> showActionsMenu(
     barrierColor: Colors.transparent,
     transitionDuration: const Duration(milliseconds: 120),
     pageBuilder: (ctx, _, __) => Align(
-      alignment: Alignment.topRight,
+      alignment: alignment,
       child: Padding(
-        padding: EdgeInsets.only(top: top, right: 12),
+        padding: EdgeInsets.only(top: top, right: 12, left: left),
         child: Material(
           color: Colors.transparent,
           child: Container(
@@ -38,12 +42,13 @@ Future<String?> showActionsMenu(
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: AppColors.barBorder),
             ),
-            child: IntrinsicWidth(
+            child: SizedBox(
+              width: 200,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   for (var i = 0; i < items.length; i++) ...[
-                    if (i == 1)
+                    if (i == dividerBefore)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 5),
                         child: Divider(
@@ -64,13 +69,13 @@ Future<String?> showActionsMenu(
                             ),
                             const SizedBox(width: 10),
                             Text(items[i].label,
-                                style: AppText.inter(15,
-                                    weight: FontWeight.w500)),
+                                style: AppText.inter(15, weight: weight)),
                           ],
                         ),
                       ),
                     ),
-                    if (i != items.length - 1 && i != 0) const SizedBox(height: 10),
+                    if (i != items.length - 1 && i + 1 != dividerBefore)
+                      const SizedBox(height: 10),
                   ],
                 ],
               ),

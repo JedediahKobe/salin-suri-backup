@@ -73,16 +73,8 @@ class _SensorPageState extends State<SensorPage> {
           SectionTitle(
             'Real-time Monitoring',
             trailing: s.hasStatusLink
-                ? GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => showSensorStatusModal(context),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text('Sensor Status',
-                          style: AppText.sf(11,
-                              weight: FontWeight.w500, color: AppColors.accent)),
-                    ),
-                  )
+                ? SensorStatusPill(
+                    onTap: () => showSensorStatusModal(context))
                 : Text('Sample data',
                     style: AppText.sf(11,
                         weight: FontWeight.w500, color: AppColors.muted)),

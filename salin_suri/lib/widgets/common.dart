@@ -513,33 +513,94 @@ class AppCheck extends StatelessWidget {
 }
 
 
-/// "Status Badge / Connected | Offline" pill (Figma 904:992, 904:1016): a white signal
-/// glyph and a label on a green (connected) or grey (offline) pill.
+/// Status badge (Figma "Status Badge" 910:1062 connected, 921:305 offline). Collapsed it
+/// is a 24px round glyph; expanded it shows the label too. Tap toggles when [onTap] is set.
 class StatusBadge extends StatelessWidget {
-  const StatusBadge({super.key, required this.connected});
+  const StatusBadge({
+    super.key,
+    required this.connected,
+    this.expanded = true,
+    this.onTap,
+  });
 
   final bool connected;
+  final bool expanded;
+  final VoidCallback? onTap;
+
+  /// Figma greens: connected #0FAD51, offline uses text-secondary.
+  static const connectedColor = Color(0xFF0FAD51);
 
   @override
   Widget build(BuildContext context) {
-    final bg = connected ? AppColors.accent : AppColors.muted;
-    return Container(
-      height: 23,
-      padding: const EdgeInsets.symmetric(horizontal: 5),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CustomPaint(
-              size: const Size.square(17),
-              painter: _SignalGlyph(bg, slashed: !connected)),
-          const SizedBox(width: 4),
-          Text(connected ? 'Connected' : 'Offline',
-              style: AppText.sf(10, color: Colors.white)),
-        ],
+    final bg = connected ? connectedColor : AppColors.muted;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 24,
+        padding: const EdgeInsets.symmetric(horizontal: 3.5),
+        decoration: BoxDecoration(
+            color: bg, borderRadius: BorderRadius.circular(20)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CustomPaint(
+                size: const Size.square(17),
+                painter: _SignalGlyph(bg, slashed: !connected)),
+            if (expanded) ...[
+              const SizedBox(width: 4),
+              Padding(
+                padding: const EdgeInsets.only(right: 1.5),
+                child: Text(connected ? 'Connected' : 'Offline',
+                    style: AppText.sf(10,
+                        weight: connected ? FontWeight.w700 : FontWeight.w400,
+                        color: Colors.white)),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
+}
+
+/// "Sensor Status" pill on the sensor pages (Figma 938:357): green, 89x17.
+class SensorStatusPill extends StatelessWidget {
+  const SensorStatusPill({super.key, required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 89,
+          height: 17,
+          decoration: BoxDecoration(
+              color: StatusBadge.connectedColor,
+              borderRadius: BorderRadius.circular(10)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                    color: Colors.white, shape: BoxShape.circle),
+                child: Text('?',
+                    style: AppText.sf(8,
+                        weight: FontWeight.w700,
+                        color: StatusBadge.connectedColor)),
+              ),
+              const SizedBox(width: 5),
+              Text('Sensor Status',
+                  style: AppText.sf(9,
+                      weight: FontWeight.w500, color: Colors.white)),
+            ],
+          ),
+        ),
+      );
 }
 
 class _SignalGlyph extends CustomPainter {

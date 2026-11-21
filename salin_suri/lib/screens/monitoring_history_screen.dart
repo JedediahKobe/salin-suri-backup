@@ -68,7 +68,7 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
 
   Future<void> _openMenu() async {
     final choice = await showActionsMenu(context, items: const [
-      ActionsMenuItem('select', 'Select Messages', AppIconType.circleCheck),
+      ActionsMenuItem('select', 'Select Filtration', AppIconType.circleCheck),
       ActionsMenuItem('archived', 'Archived Record', AppIconType.archive),
       ActionsMenuItem('deleted', 'Recently Deleted', AppIconType.trash),
     ]);
@@ -135,11 +135,11 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
                     children: [
                       Expanded(
                         child: Container(
-                          height: 40,
+                          height: 50,
                           padding: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
                             color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(25),
                           ),
                           child: Row(
                             children: [

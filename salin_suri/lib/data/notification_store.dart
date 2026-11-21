@@ -8,6 +8,7 @@ class AlertItem {
     required this.time,
     this.unread = false,
     this.opensPhDetails = false,
+    this.today = false,
   });
 
   final String title;
@@ -16,6 +17,9 @@ class AlertItem {
 
   /// Only the pH alert has a details screen so far (Figma 423:148).
   final bool opensPhDetails;
+
+  /// Shown under "Today" instead of "Earlier" (Figma 117:1198).
+  final bool today;
   bool unread;
 }
 
@@ -34,6 +38,7 @@ class NotificationStore extends ChangeNotifier {
       time: '27/10/26, 9:10 am',
       unread: true,
       opensPhDetails: true,
+      today: true,
     ),
     AlertItem(
       title: 'Post Filtration Alert',
@@ -54,6 +59,32 @@ class NotificationStore extends ChangeNotifier {
       time: '24/10/26, 8:05 am',
     ),
   ];
+
+  final archived = <AlertItem>[];
+  final deleted = <AlertItem>[];
+
+  void archive(Iterable<AlertItem> items) => _move(items, archived);
+  void delete(Iterable<AlertItem> items) => _move(items, deleted);
+
+  void _move(Iterable<AlertItem> items, List<AlertItem> to) {
+    for (final a in items.toList()) {
+      if (alerts.remove(a)) to.insert(0, a);
+    }
+    notifyListeners();
+  }
+
+  void restore(AlertItem a, List<AlertItem> from) {
+    if (!from.remove(a)) return;
+    alerts.add(a);
+    notifyListeners();
+  }
+
+  void markReadAll(Iterable<AlertItem> items) {
+    for (final a in items) {
+      a.unread = false;
+    }
+    notifyListeners();
+  }
 
   int get unreadCount => alerts.where((a) => a.unread).length;
   bool get hasUnread => unreadCount > 0;

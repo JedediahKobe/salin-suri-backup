@@ -74,6 +74,9 @@ class HistoryDetailsScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 20),
+                          Divider(
+                              height: 1, thickness: 1, color: AppColors.divider),
+                          const SizedBox(height: 20),
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text('Notified at ${r.time}',

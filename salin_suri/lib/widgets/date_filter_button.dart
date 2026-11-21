@@ -5,9 +5,9 @@ import 'app_icons.dart';
 
 /// Options of the date-range menu (Figma "Date Range Filter" 641:211).
 enum DateFilter {
-  week('7 days', 29),
-  month('30 days', 41),
-  older('More than 30 days', 26);
+  week('7 days', 44),
+  month('30 days', 44),
+  older('More than 30 days', 44);
 
   const DateFilter(this.label, this.height);
 
@@ -26,10 +26,12 @@ enum DateFilter {
 /// The round "filter" button with the date-range popup, shared by Filtration History and
 /// Maintenance History. Selecting the active option again clears the filter.
 class DateFilterButton extends StatelessWidget {
-  const DateFilterButton({super.key, required this.value, required this.onChanged});
+  const DateFilterButton(
+      {super.key, required this.value, required this.onChanged, this.size = 50});
 
   final DateFilter? value;
   final ValueChanged<DateFilter?> onChanged;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +41,7 @@ class DateFilterButton extends StatelessWidget {
       color: AppColors.surface,
       elevation: 0,
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 125, maxWidth: 125),
+      constraints: const BoxConstraints(minWidth: 179, maxWidth: 179),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(color: AppColors.divider, width: 0.5),
@@ -52,12 +54,12 @@ class DateFilterButton extends StatelessWidget {
             height: f.height,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(f.label,
-                style: AppText.inter(11, weight: FontWeight.w500)),
+                style: AppText.inter(15, weight: FontWeight.w500)),
           ),
       ],
       child: Container(
-        width: 40,
-        height: 40,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: AppColors.iconChip,
           shape: BoxShape.circle,
@@ -65,7 +67,7 @@ class DateFilterButton extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: AppIcon(AppIconType.filterLines,
-            color: AppColors.accent, size: 24, strokeWidth: 1.8),
+            color: AppColors.accent, size: size * 0.6, strokeWidth: 1.8),
       ),
     );
   }

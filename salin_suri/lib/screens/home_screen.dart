@@ -16,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _stage = 'Pre-filtration';
+  bool _badgeOpen = false; // Figma: 'closed' glyph by default, tap to expand
 
   bool get _isPre => _stage == 'Pre-filtration';
 
@@ -63,7 +64,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text('Live Dashboard',
                     style: AppText.sf(22, weight: FontWeight.w700)),
                 // Shows the Offline badge instead when the device is disconnected.
-                const StatusBadge(connected: true),
+                StatusBadge(
+                  connected: true,
+                  expanded: _badgeOpen,
+                  onTap: () => setState(() => _badgeOpen = !_badgeOpen),
+                ),
               ],
             ),
           ),

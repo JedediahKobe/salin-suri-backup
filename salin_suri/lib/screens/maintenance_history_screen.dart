@@ -127,7 +127,7 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
                         children: [
                           Expanded(
                             child: Container(
-                              height: 40,
+                              height: 50,
                               padding: const EdgeInsets.symmetric(horizontal: 10),
                               decoration: BoxDecoration(
                                 color: AppColors.surface,
