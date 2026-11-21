@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
@@ -544,9 +545,21 @@ class StatusBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CustomPaint(
-                size: const Size.square(17),
-                painter: _SignalGlyph(bg, slashed: !connected)),
+            // White disc with the exported signal glyph (assets/icons/connected|offline.svg).
+            Container(
+              width: 17,
+              height: 17,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                  color: Colors.white, shape: BoxShape.circle),
+              child: SvgPicture.asset(
+                connected
+                    ? 'assets/icons/connected.svg'
+                    : 'assets/icons/offline.svg',
+                width: connected ? 12 : 10,
+                colorFilter: ColorFilter.mode(bg, BlendMode.srcIn),
+              ),
+            ),
             if (expanded) ...[
               const SizedBox(width: 4),
               Padding(
@@ -601,35 +614,4 @@ class SensorStatusPill extends StatelessWidget {
           ),
         ),
       );
-}
-
-class _SignalGlyph extends CustomPainter {
-  _SignalGlyph(this.color, {required this.slashed});
-
-  final Color color;
-  final bool slashed;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final c = size.center(Offset.zero);
-    canvas.drawCircle(c, size.width / 2, Paint()..color = Colors.white);
-    final p = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..strokeCap = StrokeCap.round;
-    canvas.drawCircle(c, 1.2, Paint()..color = color);
-    for (final r in [3.2, 5.2]) {
-      canvas.drawArc(Rect.fromCircle(center: c, radius: r), -0.7, 1.4, false, p);
-      canvas.drawArc(Rect.fromCircle(center: c, radius: r), 3.14159 - 0.7, 1.4, false, p);
-    }
-    if (slashed) {
-      canvas.drawLine(c + const Offset(-5, 5), c + const Offset(5, -5),
-          p..strokeWidth = 1.2);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_SignalGlyph old) =>
-      old.color != color || old.slashed != slashed;
 }

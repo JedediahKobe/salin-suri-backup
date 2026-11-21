@@ -27,8 +27,7 @@ class RoundActionButton extends StatelessWidget {
             alignment: Alignment.center,
             decoration:
                 BoxDecoration(color: AppColors.iconChip, shape: BoxShape.circle),
-            child: AppIcon(type,
-                size: 26, color: AppColors.accent, strokeWidth: 1.6),
+            child: AppIcon(type, size: 26, color: AppColors.accent),
           ),
         ),
       );

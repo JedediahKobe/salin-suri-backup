@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../theme/app_theme.dart';
 
@@ -31,8 +32,31 @@ class AppIcon extends StatelessWidget {
   final double size;
   final double strokeWidth;
 
+  /// Icons exported from Figma live in assets/icons; everything else is drawn below.
+  static const _svgAssets = {
+    AppIconType.archive: 'assets/icons/archive.svg',
+    AppIconType.trash: 'assets/icons/trash.svg',
+    AppIconType.mailRead: 'assets/icons/mailRead.svg',
+    AppIconType.filterLines: 'assets/icons/filter.svg',
+    AppIconType.bulb: 'assets/icons/lightbulb.svg',
+  };
+
   @override
-  Widget build(BuildContext context) => CustomPaint(
+  Widget build(BuildContext context) {
+    final asset = _svgAssets[type];
+    if (asset != null) {
+      return SvgPicture.asset(
+        asset,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        colorFilter: ColorFilter.mode(color ?? AppColors.text, BlendMode.srcIn),
+      );
+    }
+    return _painted();
+  }
+
+  Widget _painted() => CustomPaint(
         size: Size.square(size),
         painter: _IconPainter(type, color ?? AppColors.text, strokeWidth),
       );

@@ -62,10 +62,13 @@ Future<String?> showActionsMenu(
                           children: [
                             SizedBox(
                               width: 24,
-                              child: AppIcon(items[i].icon,
-                                  size: 20,
-                                  color: AppColors.accent,
-                                  strokeWidth: 1.6),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: AppIcon(items[i].icon,
+                                    size: _iconSize(items[i].icon),
+                                    color: AppColors.accent,
+                                    strokeWidth: 1.6),
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Text(items[i].label,
@@ -86,3 +89,9 @@ Future<String?> showActionsMenu(
     ),
   );
 }
+
+/// Figma icon sizes: archive 16, mail 16, circle-check and trash 20.
+double _iconSize(AppIconType t) => switch (t) {
+      AppIconType.archive || AppIconType.mailRead => 16,
+      _ => 20,
+    };

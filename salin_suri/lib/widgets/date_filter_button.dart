@@ -67,7 +67,7 @@ class DateFilterButton extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: AppIcon(AppIconType.filterLines,
-            color: AppColors.accent, size: size * 0.6, strokeWidth: 1.8),
+            color: AppColors.accent, size: size * 0.5),
       ),
     );
   }
