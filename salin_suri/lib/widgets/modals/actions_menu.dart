@@ -21,6 +21,7 @@ Future<String?> showActionsMenu(
   Alignment alignment = Alignment.topRight,
   double left = 12,
   int dividerBefore = 1,
+  double width = 200,
 }) {
   final top = MediaQuery.of(context).padding.top + 56 + 4;
   return showGeneralDialog<String>(
@@ -43,17 +44,14 @@ Future<String?> showActionsMenu(
               border: Border.all(color: AppColors.barBorder),
             ),
             child: SizedBox(
-              width: 200,
+              width: width,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   for (var i = 0; i < items.length; i++) ...[
                     if (i == dividerBefore)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: Divider(
-                            height: 1, thickness: 1, color: AppColors.divider),
-                      ),
+                      Divider(height: 1, thickness: 1, color: AppColors.divider),
                     InkWell(
                       onTap: () => Navigator.of(ctx).pop(items[i].value),
                       child: SizedBox(
@@ -77,8 +75,8 @@ Future<String?> showActionsMenu(
                         ),
                       ),
                     ),
-                    if (i != items.length - 1 && i + 1 != dividerBefore)
-                      const SizedBox(height: 10),
+                    // Figma: 10px between every row and around the divider.
+                    if (i != items.length - 1) const SizedBox(height: 10),
                   ],
                 ],
               ),
@@ -93,5 +91,6 @@ Future<String?> showActionsMenu(
 /// Figma icon sizes: archive 16, mail 16, circle-check and trash 20.
 double _iconSize(AppIconType t) => switch (t) {
       AppIconType.archive || AppIconType.mailRead => 16,
+      AppIconType.circleCheck => 18,
       _ => 20,
     };

@@ -104,7 +104,10 @@ class CircleChip extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             if (appIcon != null)
-              AppIcon(appIcon!, color: AppColors.accent, size: size * 0.66)
+              AppIcon(appIcon!,
+                  color: AppColors.accent,
+                  // The exported bulb SVG is 18x17 in a 35 chip.
+                  size: appIcon == AppIconType.bulb ? size * 0.52 : size * 0.66)
             else
               Icon(icon, color: AppColors.accent, size: size * 0.62),
             if (dot)

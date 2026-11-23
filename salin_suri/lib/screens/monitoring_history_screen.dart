@@ -71,7 +71,7 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
       ActionsMenuItem('select', 'Select Filtration', AppIconType.circleCheck),
       ActionsMenuItem('archived', 'Archived Record', AppIconType.archive),
       ActionsMenuItem('deleted', 'Recently Deleted', AppIconType.trash),
-    ]);
+    ], width: 184);
     if (!mounted || choice == null) return;
     switch (choice) {
       case 'select':

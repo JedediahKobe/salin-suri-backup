@@ -203,7 +203,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               : Border.all(color: AppColors.accent),
                         ),
                         child: AppIcon(AppIconType.filterLines,
-                            size: 20, color: AppColors.accent),
+                            size: 18, color: AppColors.accent),
                       ),
                     ),
             ),

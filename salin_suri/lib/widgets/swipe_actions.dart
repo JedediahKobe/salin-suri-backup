@@ -27,7 +27,10 @@ class RoundActionButton extends StatelessWidget {
             alignment: Alignment.center,
             decoration:
                 BoxDecoration(color: AppColors.iconChip, shape: BoxShape.circle),
-            child: AppIcon(type, size: 26, color: AppColors.accent),
+            // Figma draws these at the exported SVG size: archive 26x23, trash 23x25.
+            child: AppIcon(type,
+                size: type == AppIconType.trash ? 25 : 26,
+                color: AppColors.accent),
           ),
         ),
       );
