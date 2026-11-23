@@ -129,7 +129,9 @@ class CircleChip extends StatelessWidget {
 }
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle(this.text, {super.key, this.trailing});
+  const SectionTitle(this.text, {super.key, this.trailing, this.size = 22});
+
+  final double size;
 
   final String text;
   final Widget? trailing;
@@ -139,7 +141,7 @@ class SectionTitle extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(text, style: AppText.sf(22, weight: FontWeight.w700)),
+        Text(text, style: AppText.sf(size, weight: FontWeight.w700)),
         if (trailing != null) trailing!,
       ],
     );

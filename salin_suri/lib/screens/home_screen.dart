@@ -32,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // ── Sensors ───────────────────────────────────────────
           SectionTitle(
             'Sensors',
+            size: 24,
             trailing: TextButton(
               onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SensorsScreen())),
@@ -59,21 +60,22 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(
             height: 32,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Live Dashboard',
-                    style: AppText.sf(22, weight: FontWeight.w700)),
-                // Shows the Offline badge instead when the device is disconnected.
+                // Status badge sits left of the title (Figma 729:194); it shows the Offline
+                // badge instead when the device is disconnected.
                 StatusBadge(
                   connected: true,
                   expanded: _badgeOpen,
                   onTap: () => setState(() => _badgeOpen = !_badgeOpen),
                 ),
+                const SizedBox(width: 6),
+                Text('Live Dashboard',
+                    style: AppText.sf(24, weight: FontWeight.w700)),
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.fromLTRB(0, 6, 10, 10),
             child: Text('Last Updated: September 24 • 10:37 am',
                 style: AppText.sf(12, weight: FontWeight.w500, color: AppColors.muted)),
           ),

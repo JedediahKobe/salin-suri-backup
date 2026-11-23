@@ -123,46 +123,12 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
                         onChanged: (i) => setState(() => _tab = i),
                       ),
                       const SizedBox(height: 11),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 50,
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(40),
-                              ),
-                              child: Row(
-                                children: [
-                                  AppIcon(AppIconType.search,
-                                      size: 13, color: AppColors.muted),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: TextField(
-                                      onChanged: (v) => setState(() => _query = v),
-                                      style: AppText.sf(12),
-                                      cursorColor: AppColors.accent,
-                                      decoration: InputDecoration(
-                                        isDense: true,
-                                        border: InputBorder.none,
-                                        hintText: 'Search date or maintenance number',
-                                        hintStyle: AppText.sf(12,
-                                            color: AppColors.muted),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          DateFilterButton(
-                            value: _dateFilter,
-                            onChanged: (f) => setState(() => _dateFilter = f),
-                          ),
-                        ],
-                      ),
+                      SearchFilterBar(
+ hint: 'Search date or maintenance number',
+ onQuery: (v) => setState(() => _query = v),
+ value: _dateFilter,
+ onFilter: (f) => setState(() => _dateFilter = f),
+ ),
                       const SizedBox(height: 11),
                       if (items.isEmpty)
                         Padding(
