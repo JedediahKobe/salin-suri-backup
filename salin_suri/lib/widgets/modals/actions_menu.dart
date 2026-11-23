@@ -50,8 +50,10 @@ Future<String?> showActionsMenu(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   for (var i = 0; i < items.length; i++) ...[
-                    if (i == dividerBefore)
+                    if (i == dividerBefore) ...[
                       Divider(height: 1, thickness: 1, color: AppColors.divider),
+                      const SizedBox(height: 10),
+                    ],
                     InkWell(
                       onTap: () => Navigator.of(ctx).pop(items[i].value),
                       child: SizedBox(
