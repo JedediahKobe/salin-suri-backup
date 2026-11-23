@@ -56,10 +56,10 @@ class _MaintenanceDetailsScreenState extends State<MaintenanceDetailsScreen> {
                             children: [
                               Text('Maintenance Report',
                                   style: AppText.sf(24, weight: FontWeight.w700)),
-                              Text(record.completed ? 'Completed' : 'Required',
+                              Text(record.completed ? record.reportTime : 'Required',
                                   style: AppText.sf(13,
                                       color: record.completed
-                                          ? AppColors.accent
+                                          ? AppColors.divider
                                           : AppColors.alert)),
                             ],
                           ),
@@ -73,12 +73,14 @@ class _MaintenanceDetailsScreenState extends State<MaintenanceDetailsScreen> {
                             'filtration media needs to be replaced.',
                             style: AppText.sf(18, color: AppColors.muted),
                           ),
-                          const SizedBox(height: 20),
-                          Divider(
-                              height: 1, thickness: 1, color: AppColors.divider),
-                          const SizedBox(height: 20),
-                          Text('Notified at ${record.reportTime}',
-                              style: AppText.sf(13, color: AppColors.muted)),
+                          if (!record.completed) ...[
+                            const SizedBox(height: 20),
+                            Divider(
+                                height: 1, thickness: 1, color: AppColors.divider),
+                            const SizedBox(height: 20),
+                            Text('Notified at ${record.reportTime}',
+                                style: AppText.sf(13, color: AppColors.muted)),
+                          ],
                         ],
                       ),
                     ),
@@ -131,7 +133,7 @@ class _DocumentationCard extends StatelessWidget {
 
   final MaintenanceRecord record;
   final bool? choice;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool?> onChanged;
   final VoidCallback onSubmit;
 
   @override
@@ -168,13 +170,33 @@ class _DocumentationCard extends StatelessWidget {
                 label: 'Yes, replacement completed',
                 sub: 'Proceed to record replacement details.',
                 selected: choice == true,
-                onTap: () => onChanged(true)),
+                onTap: () => onChanged(choice == true ? null : true)),
             const SizedBox(height: 20),
             _Option(
                 label: 'No, not yet recorded',
                 sub: 'Keep the maintenance status pending.',
                 selected: choice == false,
-                onTap: () => onChanged(false)),
+                onTap: () => onChanged(choice == false ? null : false)),
+            const SizedBox(height: 20),
+            Container(
+              height: 80,
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceInner,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: TextField(
+                maxLines: null,
+                style: AppText.inter(15),
+                cursorColor: AppColors.accent,
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  hintText: 'Additional Notes (Optional)',
+                  hintStyle: AppText.inter(15, color: AppColors.muted),
+                ),
+              ),
+            ),
             if (choice != null) ...[
               divider,
               Center(

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../data/app_prefs.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
+import 'about_screen.dart';
+import 'device_info_screen.dart';
 import 'filtration_bin_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -26,9 +28,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Device',
             caption: 'Manage your device connection and view hardware details.',
             rows: [
-              _Row(label: 'Device Connection', onTap: () {}),
-              _Row(label: 'Device Information', onTap: () {}),
-              _Row(label: 'About Salin-Suri', onTap: () {}),
+              _Row(
+                label: 'Information & Connection',
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const DeviceInfoScreen())),
+              ),
+              _Row(
+                label: 'About Salin-Suri',
+                onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AboutScreen())),
+              ),
             ],
           ),
           _Section(
