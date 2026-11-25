@@ -34,7 +34,7 @@ class NotificationStore extends ChangeNotifier {
     AlertItem(
       title: 'Pre Filtration Alert',
       body:
-          'pH Level Outside Reference Range Pre-filtration pH reached 9.8, which is above the...',
+          'Pre-filtration pH and turbidity exceeded the reference range.',
       time: '27/10/26, 9:10 am',
       unread: true,
       opensPhDetails: true,

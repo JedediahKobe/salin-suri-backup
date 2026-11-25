@@ -5,7 +5,7 @@ import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 import 'about_screen.dart';
 import 'device_info_screen.dart';
-import 'filtration_bin_screen.dart';
+import 'records_bin_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -66,21 +66,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 label: 'Archived Records',
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) =>
-                        const FiltrationBinScreen(kind: BinKind.archived))),
+                        RecordsBinScreen(kind: BinKind.archived))),
               ),
               _Row(
                 label: 'Recently Deleted',
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) =>
-                        const FiltrationBinScreen(kind: BinKind.deleted))),
+                        RecordsBinScreen(kind: BinKind.deleted))),
               ),
-            ],
-          ),
-          _Section(
-            title: 'Support',
-            caption: 'Need help? Contact our team.',
-            rows: [
-              _Row(label: 'Contact Us', onTap: () {}),
             ],
           ),
         ],

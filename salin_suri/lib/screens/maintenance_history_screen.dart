@@ -9,7 +9,7 @@ import '../widgets/modals/actions_menu.dart';
 import '../widgets/modals/confirm_dialog.dart';
 import '../widgets/segmented_tabs.dart';
 import '../widgets/swipe_actions.dart';
-import 'maintenance_bin_screen.dart';
+import 'records_bin_screen.dart';
 import 'maintenance_details_screen.dart';
 
 /// Maintenance History (Figma 689:169 / select mode 892:615, 892:812): totals card,
@@ -65,10 +65,10 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
         setState(() => _selecting = true);
       case 'archived':
         Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => const MaintenanceBinScreen(kind: BinKind.archived)));
+            builder: (_) => RecordsBinScreen(kind: BinKind.archived, initialType: RecordType.maintenance)));
       case 'deleted':
         Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => const MaintenanceBinScreen(kind: BinKind.deleted)));
+            builder: (_) => RecordsBinScreen(kind: BinKind.deleted, initialType: RecordType.maintenance)));
     }
   }
 

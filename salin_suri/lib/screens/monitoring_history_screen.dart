@@ -9,7 +9,7 @@ import '../widgets/modals/actions_menu.dart';
 import '../widgets/modals/confirm_dialog.dart';
 import '../widgets/swipe_actions.dart';
 import '../widgets/segmented_tabs.dart';
-import 'filtration_bin_screen.dart';
+import 'records_bin_screen.dart';
 import 'history_details_screen.dart';
 
 /// Filtration History (Figma 623:831): All / Pre / Post tabs, search, and a list of
@@ -78,10 +78,10 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
         setState(() => _selecting = true);
       case 'archived':
         Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => const FiltrationBinScreen(kind: BinKind.archived)));
+            builder: (_) => RecordsBinScreen(kind: BinKind.archived, initialType: RecordType.filtration)));
       case 'deleted':
         Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => const FiltrationBinScreen(kind: BinKind.deleted)));
+            builder: (_) => RecordsBinScreen(kind: BinKind.deleted, initialType: RecordType.filtration)));
     }
   }
 
@@ -206,10 +206,15 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
 
 /// Run card shared by Filtration History and its archived / deleted bins.
 class FiltrationRecordCard extends StatelessWidget {
-  const FiltrationRecordCard({required this.record, required this.onTap});
+  const FiltrationRecordCard(
+      {required this.record, required this.onTap, this.inBin = false});
 
   final FiltrationRecord record;
   final VoidCallback onTap;
+
+  /// Archived / Recently Deleted (Figma 949:824): no Pre/Post tag, the details link
+  /// sits top-right.
+  final bool inBin;
 
   // Figma tag colors: pre #6097FC, post #2BFF00.
   static const _preColor = Color(0xFF6097FC);
@@ -243,6 +248,13 @@ class FiltrationRecordCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (inBin)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 9),
+                    child: Text('View Filtration Details →',
+                        style: AppText.sf(10, color: AppColors.accent)),
+                  )
+                else
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

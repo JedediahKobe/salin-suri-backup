@@ -8,7 +8,7 @@ import '../widgets/common.dart';
 import '../widgets/modals/actions_menu.dart';
 import '../widgets/modals/confirm_dialog.dart';
 import '../widgets/swipe_actions.dart';
-import 'notification_bin_screen.dart';
+import 'records_bin_screen.dart';
 import 'ph_alert_details_screen.dart';
 
 /// Read / unread filter (Figma "Read/Unread Filter" 931:400).
@@ -88,11 +88,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
       case 'archived':
         Navigator.of(context).push(MaterialPageRoute(
             builder: (_) =>
-                const NotificationBinScreen(kind: NotificationBin.archived)));
+                RecordsBinScreen(kind: BinKind.archived, initialType: RecordType.notification)));
       case 'deleted':
         Navigator.of(context).push(MaterialPageRoute(
             builder: (_) =>
-                const NotificationBinScreen(kind: NotificationBin.deleted)));
+                RecordsBinScreen(kind: BinKind.deleted, initialType: RecordType.notification)));
     }
   }
 
@@ -148,8 +148,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }
   }
 
-  Future<void> _apply({required bool delete}) async {
-    final picked = _selected.toList();
+  Future<void> _apply({required bool delete, List<AlertItem>? only}) async {
+    final picked = only ?? _selected.toList();
     if (picked.isEmpty) return;
     final verb = delete ? 'deleted' : 'archived';
     final ok = await showConfirmation(
@@ -161,7 +161,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
     if (!ok || !mounted) return;
     delete ? _store.delete(picked) : _store.archive(picked);
-    _setSelecting(false);
+    if (_selecting) _setSelecting(false);
   }
 
   @override
@@ -211,7 +211,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               children: [
                 Expanded(
                   child: ListView(
-                    padding: EdgeInsets.fromLTRB(9, 11, 9, _selecting ? 16 : 110),
+                    padding: EdgeInsets.fromLTRB(11, 11, 11, _selecting ? 16 : 110),
                     children: [
                       Text('Notification',
                           style: AppText.sf(24, weight: FontWeight.w900)),
@@ -262,18 +262,25 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
+  // Figma 931:413: 390-wide cards, 11px apart. Each card is also draggable to
+  // archive / delete (annotation on 931:412).
   Widget _row(AlertItem a) => Padding(
-        padding: const EdgeInsets.fromLTRB(7, 0, 0, 11),
+        padding: const EdgeInsets.only(bottom: 11),
         child: Row(
           children: [
             if (_selecting) ...[
               AppCheck(selected: _selected.contains(a), onTap: () => _toggle(a)),
-              const SizedBox(width: 13),
+              const SizedBox(width: 12),
             ],
             Expanded(
-              child: AlertTile(
-                alert: a,
-                onTap: _selecting ? () => _toggle(a) : () => _open(a),
+              child: SwipeActionRow(
+                enabled: !_selecting,
+                onArchive: () => _apply(delete: false, only: [a]),
+                onDelete: () => _apply(delete: true, only: [a]),
+                child: AlertTile(
+                  alert: a,
+                  onTap: _selecting ? () => _toggle(a) : () => _open(a),
+                ),
               ),
             ),
           ],
@@ -281,7 +288,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
       );
 }
 
-/// One notification row (Figma 931:413): alert glyph, title and time, body, divider.
+/// One notification card (Figma 931:413): bordered-less card with the alert glyph, title and
+/// time, and a two-line body. Unread: white, semibold title, bold body. Read: grey regular.
 class AlertTile extends StatelessWidget {
   const AlertTile({super.key, required this.alert, required this.onTap});
 
@@ -290,49 +298,64 @@ class AlertTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Unread: white semibold. Read: grey regular.
-    final color = alert.unread ? AppColors.text : AppColors.muted;
-    final weight = alert.unread ? FontWeight.w600 : FontWeight.w400;
-    return InkWell(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-                color: AppColors.iconChip, shape: BoxShape.circle),
-            child: const AppIcon(AppIconType.circleAlert,
-                color: AppColors.alertRed, size: 32, strokeWidth: 1.8),
-          ),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final unread = alert.unread;
+    final color = unread ? AppColors.text : AppColors.muted;
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(10),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                    color: AppColors.iconChip, shape: BoxShape.circle),
+                child: const AppIcon(AppIconType.circleAlert,
+                    color: AppColors.alertRed, size: 32, strokeWidth: 1.8),
+              ),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(
-                      child: Text(alert.title,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppText.sf(18, weight: weight, color: color)),
+                    SizedBox(
+                      height: 20,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(alert.title,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppText.sf(18,
+                                    weight:
+                                        unread ? FontWeight.w600 : FontWeight.w400,
+                                    color: color)),
+                          ),
+                          Text(alert.time,
+                              style: AppText.sf(unread ? 11 : 13, color: color)),
+                        ],
+                      ),
                     ),
-                    Text(alert.time,
-                        style: AppText.sf(alert.unread ? 11 : 13,
-                            weight: weight, color: color)),
+                    const SizedBox(height: 8),
+                    Text(alert.body,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.justify,
+                        style: AppText.sf(13,
+                                weight: unread ? FontWeight.w700 : FontWeight.w400,
+                                color: color)
+                            .copyWith(height: unread ? 20 / 13 : null)),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(alert.body,
-                    textAlign: TextAlign.justify,
-                    style: AppText.sf(13, weight: weight, color: color)),
-                const SizedBox(height: 8),
-                Divider(height: 1, thickness: 1, color: AppColors.divider),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
