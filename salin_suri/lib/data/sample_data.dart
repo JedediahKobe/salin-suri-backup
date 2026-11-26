@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/line_chart.dart';
 
-/// Placeholder readings. Replace with your BLE / API data source.
+/// Chart styling shared by the sensor charts (readings come from LiveReadings).
 class SampleData {
   SampleData._();
 

@@ -36,7 +36,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _store.markRead(a);
     if (a.opensPhDetails) {
       Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const PhAlertDetailsScreen()));
+          MaterialPageRoute(builder: (_) => PhAlertDetailsScreen(alert: a)));
     }
   }
 
@@ -217,12 +217,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           style: AppText.sf(24, weight: FontWeight.w900)),
                       const SizedBox(height: 11),
                       if (items.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 60),
-                          child: Center(
-                            child: Text('No notifications',
-                                style: AppText.sf(14, color: AppColors.muted)),
-                          ),
+                        EmptyState(
+                          icon: Icons.notifications_none_rounded,
+                          title: _store.alerts.isEmpty
+                              ? 'No notifications yet'
+                              : 'No notifications found',
+                          message: _store.alerts.isEmpty
+                              ? "You're all caught up. Alerts about your water quality will show up here."
+                              : 'Try a different filter.',
                         ),
                       if (today.isNotEmpty) ...[
                         Text('Today',

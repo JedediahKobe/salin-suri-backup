@@ -64,7 +64,7 @@ class _RecordsBinScreenState extends State<RecordsBinScreen> {
         _Entry(
           RecordType.filtration,
           '${r.title} ${r.time}'.toLowerCase(),
-          r.timestamp ?? DateTime(2026, 10, 26).add(Duration(minutes: r.number)),
+          r.timestamp ?? DateTime.fromMillisecondsSinceEpoch(r.number),
           (tap) => FiltrationRecordCard(record: r, inBin: true, onTap: tap),
           () => _filtration.restore(r, f),
         ),
@@ -81,7 +81,7 @@ class _RecordsBinScreenState extends State<RecordsBinScreen> {
         _Entry(
           RecordType.notification,
           '${a.title} ${a.body} ${a.time}'.toLowerCase(),
-          a.createdAt ?? DateTime(2026, 10, 24),
+          a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0),
           (tap) => AlertTile(alert: a, onTap: tap),
           () => _notifications.restore(a, n),
         ),
@@ -178,9 +178,17 @@ class _RecordsBinScreenState extends State<RecordsBinScreen> {
             children: [
               Expanded(
                 child: items.isEmpty
-                    ? Center(
-                        child: Text('Nothing here yet',
-                            style: AppText.sf(14, color: AppColors.muted)))
+                    ? EmptyState(
+                        icon: _archived
+                            ? Icons.inventory_2_outlined
+                            : Icons.delete_outline_rounded,
+                        title: _archived
+                            ? 'No archived records'
+                            : 'No recently deleted records',
+                        message: _archived
+                            ? 'Records you archive will be kept here.'
+                            : 'Records you delete will be kept here until removed.',
+                      )
                     : ListView(
                         padding: const EdgeInsets.fromLTRB(11, 11, 11, 24),
                         children: [

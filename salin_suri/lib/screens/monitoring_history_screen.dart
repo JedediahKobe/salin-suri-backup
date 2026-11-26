@@ -139,12 +139,14 @@ class _MonitoringHistoryScreenState extends State<MonitoringHistoryScreen> {
  ),
                   const SizedBox(height: 11),
                   if (items.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 60),
-                      child: Center(
-                        child: Text('No filtrations found',
-                            style: AppText.sf(14, color: AppColors.muted)),
-                      ),
+                    EmptyState(
+                      icon: Icons.water_drop_outlined,
+                      title: _store.active.isEmpty
+                          ? 'No filtration history yet'
+                          : 'No filtrations found',
+                      message: _store.active.isEmpty
+                          ? 'Filtration runs will appear here once the device records them.'
+                          : 'Try a different search or date filter.',
                     ),
                   for (final r in items) ...[
                     Row(

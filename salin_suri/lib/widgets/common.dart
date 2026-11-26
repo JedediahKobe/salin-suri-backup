@@ -620,3 +620,56 @@ class SensorStatusPill extends StatelessWidget {
         ),
       );
 }
+
+/// Placeholder shown when a list or card has no data yet (nothing recorded, or no device
+/// connected). [icon] is any Material icon; [message] explains what will appear here.
+class EmptyState extends StatelessWidget {
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.message,
+    this.compact = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? message;
+
+  /// Smaller version for use inside a card.
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+            horizontal: 32, vertical: compact ? 16 : 48),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: compact ? 44 : 64,
+              height: compact ? 44 : 64,
+              decoration: BoxDecoration(
+                  color: AppColors.iconChip, shape: BoxShape.circle),
+              child: Icon(icon,
+                  size: compact ? 22 : 30, color: AppColors.muted),
+            ),
+            SizedBox(height: compact ? 10 : 16),
+            Text(title,
+                textAlign: TextAlign.center,
+                style: AppText.sf(compact ? 15 : 18, weight: FontWeight.w600)),
+            if (message != null) ...[
+              const SizedBox(height: 6),
+              Text(message!,
+                  textAlign: TextAlign.center,
+                  style: AppText.sf(compact ? 12 : 14, color: AppColors.muted)
+                      .copyWith(height: 1.4)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}

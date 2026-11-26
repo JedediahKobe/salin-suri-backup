@@ -14,6 +14,9 @@ class AlertItem {
     this.unread = false,
     this.opensPhDetails = false,
     this.today = false,
+    this.ph,
+    this.turbidity,
+    this.filtrationNumber,
   });
 
   /// Database document id ('' for the built-in sample data).
@@ -31,36 +34,11 @@ class AlertItem {
   final bool today;
   bool unread;
 
-  /// Built-in sample notifications, used when no database is connected.
-  static List<AlertItem> sample() => [
-      AlertItem(
-        title: 'Pre Filtration Alert',
-        body:
-            'Pre-filtration pH and turbidity exceeded the reference range.',
-        time: '27/10/26, 9:10 am',
-        unread: true,
-        opensPhDetails: true,
-        today: true,
-      ),
-      AlertItem(
-        title: 'Post Filtration Alert',
-        body:
-            'High Turbidity Detected Post-filtration turbidity spiked to 4.2 NTU, exceeding the 1.0 NTU thr...',
-        time: '26/10/26, 3:45 pm',
-      ),
-      AlertItem(
-        title: 'Flow Rate Notice',
-        body:
-            'Low Flow Rate Warning Intake flow dropped to 12 L/min, below the expected 20 L/min minimu..',
-        time: '24/10/26, 8:05 am',
-      ),
-      AlertItem(
-        title: 'Maintenance Alert',
-        body:
-            'Routine maintenance is due. Check and clean the filters to maintain system performance.',
-        time: '24/10/26, 8:05 am',
-      ),
-    ];
+  /// Readings that triggered a pH / turbidity alert, and the filtration run it was raised
+  /// for. Null when the alert doesn't carry them.
+  final double? ph;
+  final double? turbidity;
+  final int? filtrationNumber;
 
   Map<String, dynamic> toMap() => {
         'title': title,
@@ -69,6 +47,9 @@ class AlertItem {
         'unread': unread,
         'opensPhDetails': opensPhDetails,
         'today': today,
+        'ph': ph,
+        'turbidity': turbidity,
+        'filtrationNumber': filtrationNumber,
       };
 
   factory AlertItem.fromMap(String id, Map<String, dynamic> m) {
@@ -82,6 +63,9 @@ class AlertItem {
       time: t == null ? '' : listTime(t),
       unread: m['unread'] as bool? ?? false,
       opensPhDetails: m['opensPhDetails'] as bool? ?? false,
+      ph: (m['ph'] as num?)?.toDouble(),
+      turbidity: (m['turbidity'] as num?)?.toDouble(),
+      filtrationNumber: (m['filtrationNumber'] as num?)?.toInt(),
       today: t != null &&
           t.year == now.year &&
           t.month == now.month &&

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../data/live_readings.dart';
+import '../data/backend/time_format.dart';
 import '../data/sample_data.dart';
 import '../data/sensor_specs.dart';
 import '../theme/app_theme.dart';
@@ -28,9 +30,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: LiveReadings.instance,
+      builder: (context, _) => _buildPage(
+          context, LiveReadings.instance.snapshot.parameter(widget.spec.id)),
+    );
+  }
+
+  Widget _buildPage(BuildContext context, ParameterData data) {
     final s = widget.spec;
     final isPre = _tab == 0;
-    final value = isPre ? s.historyPre : s.historyPost;
+    final value = isPre ? data.historyPre : data.historyPost;
+    final series = isPre ? data.historyPreSeries : data.historyPostSeries;
 
     return Scaffold(
       appBar: AppTopBar(
@@ -61,15 +72,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
               children: [
                 StatsPanel(
                   cells: [
-                    StatCell(label: _readingLabels[_tab], value: s.format(value)),
+                    StatCell(label: _readingLabels[_tab], value: s.formatOrDash(value)),
                     StatCell(label: s.limitLabel, value: s.limitValue),
                     StatCell(
                       label: s.statusLabel,
                       value: '',
-                      valueWidget: _StatusBadge(
-                        within: s.within(value),
-                        text: s.within(value) ? s.statusWithin : s.statusOutside,
-                      ),
+                      valueWidget: value == null
+                          ? Text('--',
+                              style: AppText.sf(17, weight: FontWeight.w600))
+                          : _StatusBadge(
+                              within: s.within(value),
+                              text: s.within(value)
+                                  ? s.statusWithin
+                                  : s.statusOutside,
+                            ),
                     ),
                   ],
                 ),
@@ -87,9 +103,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       LineChart(
                         series: [
                           ChartSeries(
-                            values: isPre
-                                ? s.historyPreSeries
-                                : s.historyPostSeries,
+                            values: series,
                             colors: SampleData.gradient,
                           ),
                         ],
@@ -104,11 +118,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                _TrendOverview(
-                  spec: s,
-                  series: isPre ? s.historyPreSeries : s.historyPostSeries,
-                  latest: value,
-                ),
+                if (value == null)
+                  const SurfaceCard(
+                    child: EmptyState(
+                      compact: true,
+                      icon: Icons.insights_rounded,
+                      title: 'No trend yet',
+                      message:
+                          'The trend overview appears once readings are recorded.',
+                    ),
+                  )
+                else
+                  _TrendOverview(
+                    spec: s,
+                    series: series,
+                    latest: value,
+                    updatedAt: LiveReadings.instance.snapshot.updatedAt,
+                  ),
               ],
             ),
           ),
@@ -121,12 +147,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
 /// "Trend Overview" card (Figma 935:926): headline reading, change indicator, latest
 /// timestamp, divider and an Observation paragraph.
 class _TrendOverview extends StatelessWidget {
-  const _TrendOverview(
-      {required this.spec, required this.series, required this.latest});
+  const _TrendOverview({
+    required this.spec,
+    required this.series,
+    required this.latest,
+    this.updatedAt,
+  });
 
   final SensorSpec spec;
   final List<double> series;
   final double latest;
+  final DateTime? updatedAt;
 
   @override
   Widget build(BuildContext context) {
@@ -138,6 +169,11 @@ class _TrendOverview extends StatelessWidget {
     final change =
         '${stable ? '~ ' : ''}${delta.abs().toStringAsFixed(spec.decimals)}${unit.isEmpty ? '' : ' $unit'}';
     final latestText = spec.format(latest).trim();
+    String observation(double d, bool flat) => flat
+        ? 'Readings remained relatively consistent during the monitoring period.'
+        : (d < 0
+            ? 'Readings moved downward during the monitoring period.'
+            : 'Readings moved upward during the monitoring period.');
     return SurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
       child: Column(
@@ -181,7 +217,10 @@ class _TrendOverview extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
-                Text('Latest Reading as of September 24 \u2022 10:37 am',
+                Text(
+                    updatedAt == null
+                        ? 'Latest reading time unavailable'
+                        : 'Latest Reading as of ${liveTime(updatedAt!)}',
                     style: AppText.sf(15, color: AppColors.muted)),
               ],
             ),
@@ -198,7 +237,7 @@ class _TrendOverview extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(31, 10, 10, 10),
             child: Text(
-              'Readings remained relatively consistent, with a slight upward movement during the monitoring period.',
+              observation(delta, stable),
               style: AppText.sf(15, color: AppColors.muted),
             ),
           ),

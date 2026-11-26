@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../data/backend/time_format.dart';
+import '../data/live_readings.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 
@@ -17,6 +19,14 @@ class DeviceInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: LiveReadings.instance,
+      builder: (context, _) =>
+          _buildPage(context, LiveReadings.instance.snapshot),
+    );
+  }
+
+  Widget _buildPage(BuildContext context, LiveSnapshot live) {
     final small = AppText.sf(11, color: AppColors.muted);
     return Scaffold(
       appBar: const AppTopBar(title: 'Information & Connection', showBack: true),
@@ -46,13 +56,17 @@ class DeviceInfoScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Connection Status', style: AppText.sf(22, weight: FontWeight.w700)),
-              Text('Connected', style: AppText.sf(13, color: AppColors.accent)),
+              Text(live.connected ? 'Connected' : 'Offline',
+                  style: AppText.sf(13,
+                      color: live.connected ? AppColors.accent : AppColors.muted)),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Icon(Icons.wifi_rounded, size: 48, color: AppColors.accent),
+              Icon(live.connected ? Icons.wifi_rounded : Icons.wifi_off_rounded,
+                  size: 48,
+                  color: live.connected ? AppColors.accent : AppColors.muted),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -67,15 +81,18 @@ class DeviceInfoScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text('Device ID: ESP-1234-6789', style: small),
+          Text('Device ID: ${live.deviceId ?? '--'}', style: small),
           const SizedBox(height: 4),
-          Text('Last Updated: October 31, 2026, 10:38 am', style: small),
+          Text(
+              'Last Updated: ${live.updatedAt == null ? '--' : liveTime(live.updatedAt!)}',
+              style: small),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Connection Type', style: AppText.sf(15)),
-              Text('Wi-Fi', style: AppText.sf(13, color: AppColors.muted)),
+              Text(live.connectionType ?? '--',
+                  style: AppText.sf(13, color: AppColors.muted)),
             ],
           ),
           const SizedBox(height: 16),
