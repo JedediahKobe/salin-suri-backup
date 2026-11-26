@@ -24,6 +24,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   int _tab = 0; // 0 = Pre-filtration, 1 = Post-filtration
 
   static const _tabLabels = ['Pre-filtration', 'Post-filtration'];
+  static const _readingLabels = ['Pre-Filtration', 'Post-Filtration'];
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +45,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(8, 12, 8, 24),
+        padding: const EdgeInsets.fromLTRB(11, 13, 11, 24),
         children: [
           SegmentedTabs(
             labels: _tabLabels,
@@ -60,7 +61,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               children: [
                 StatsPanel(
                   cells: [
-                    StatCell(label: _tabLabels[_tab], value: s.format(value)),
+                    StatCell(label: _readingLabels[_tab], value: s.format(value)),
                     StatCell(label: s.limitLabel, value: s.limitValue),
                     StatCell(
                       label: s.statusLabel,
@@ -73,7 +74,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                SurfaceCard(
+                SizedBox(
+                  height: 346,
+                  child: SurfaceCard(
                   padding: const EdgeInsets.fromLTRB(16, 19, 8, 16),
                   child: Column(
                     children: [
@@ -93,15 +96,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         minY: s.minY,
                         maxY: s.maxY,
                         step: s.step,
-                        height: 250,
+                        height: 230,
                         strokeWidth: 4,
                       ),
                     ],
                   ),
+                  ),
                 ),
                 const SizedBox(height: 12),
-                _StatisticalSummary(
-                    stats: isPre ? s.preSummary : s.postSummary),
+                _TrendOverview(
+                  spec: s,
+                  series: isPre ? s.historyPreSeries : s.historyPostSeries,
+                  latest: value,
+                ),
               ],
             ),
           ),
@@ -111,60 +118,92 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 }
 
-class _StatisticalSummary extends StatelessWidget {
-  const _StatisticalSummary({required this.stats});
+/// "Trend Overview" card (Figma 935:926): headline reading, change indicator, latest
+/// timestamp, divider and an Observation paragraph.
+class _TrendOverview extends StatelessWidget {
+  const _TrendOverview(
+      {required this.spec, required this.series, required this.latest});
 
-  final SummaryStats stats;
+  final SensorSpec spec;
+  final List<double> series;
+  final double latest;
 
   @override
   Widget build(BuildContext context) {
+    final delta = series.last - series.first;
+    final range = (spec.maxY - spec.minY).abs();
+    final stable = delta.abs() < range * 0.05;
+    final label = stable ? 'Stable' : (delta < 0 ? 'Decreasing' : 'Increasing');
+    final unit = spec.unit.trim();
+    final change =
+        '${stable ? '~ ' : ''}${delta.abs().toStringAsFixed(spec.decimals)}${unit.isEmpty ? '' : ' $unit'}';
+    final latestText = spec.format(latest).trim();
     return SurfaceCard(
-      padding: const EdgeInsets.fromLTRB(35, 19, 16, 22),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Statistical Summary',
-              style: AppText.sf(20, weight: FontWeight.w600)),
-          const SizedBox(height: 28),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _Stat(value: stats.average, label: 'Average Reading')),
-              Expanded(child: _Stat(value: stats.median, label: 'Median Reading')),
-            ],
+          Container(
+            height: 60,
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Trend Overview',
+                    style: AppText.sf(25, weight: FontWeight.w600)),
+                Text(label,
+                    style: AppText.sf(11,
+                        weight: FontWeight.w500, color: AppColors.accent)),
+              ],
+            ),
           ),
-          const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _Stat(value: stats.minimum, label: 'Minimum Range')),
-              Expanded(child: _Stat(value: stats.maximum, label: 'Maximum Range')),
-            ],
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(latestText,
+                        style: AppText.sf(30, weight: FontWeight.w700)),
+                    const SizedBox(width: 6),
+                    if (!stable)
+                      Icon(
+                          delta < 0
+                              ? Icons.arrow_downward_rounded
+                              : Icons.arrow_upward_rounded,
+                          size: 14,
+                          color: AppColors.accent),
+                    Text(change,
+                        style: AppText.sf(15, color: AppColors.accent)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text('Latest Reading as of September 24 \u2022 10:37 am',
+                    style: AppText.sf(15, color: AppColors.muted)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Divider(height: 1, thickness: 1, color: AppColors.divider),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Text('Observation',
+                style: AppText.sf(20, weight: FontWeight.w600)),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(31, 10, 10, 10),
+            child: Text(
+              'Readings remained relatively consistent, with a slight upward movement during the monitoring period.',
+              style: AppText.sf(15, color: AppColors.muted),
+            ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _Stat extends StatelessWidget {
-  const _Stat({required this.value, required this.label});
-
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(value, style: AppText.sf(30, weight: FontWeight.w700)),
-        ),
-        const SizedBox(height: 2),
-        Text(label, style: AppText.sf(15)),
-      ],
     );
   }
 }

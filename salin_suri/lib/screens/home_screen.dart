@@ -94,9 +94,9 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 107,
               cells: [
                 StatCell(label: 'Temperature', value: _isPre ? '29.6 °C' : '28.9 °C'),
-                StatCell(label: 'pH level', value: _isPre ? '9.8' : '7.2'),
-                StatCell(label: 'Turbidity', value: _isPre ? '8.4 NTU' : '2.1 NTU'),
-                StatCell(label: 'TDS', value: _isPre ? '240 ppm' : '118 ppm'),
+                StatCell(label: 'pH level', value: _isPre ? '7.2' : '7.2'),
+                StatCell(label: 'Turbidity', value: _isPre ? '2.1 NTU' : '2.1 NTU'),
+                StatCell(label: 'TDS', value: _isPre ? '118 ppm' : '118 ppm'),
               ],
             ),
           ),

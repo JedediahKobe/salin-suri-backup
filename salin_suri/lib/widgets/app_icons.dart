@@ -44,16 +44,22 @@ class AppIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final asset = _svgAssets[type];
-    if (asset != null) {
-      return SvgPicture.asset(
-        asset,
-        width: size,
-        height: size,
-        fit: BoxFit.contain,
-        colorFilter: ColorFilter.mode(color ?? AppColors.text, BlendMode.srcIn),
-      );
-    }
-    return _painted();
+    // Center loosens the parent's constraints: without it a tight parent (e.g. a fixed-size
+    // Container with no alignment) would stretch the icon far past [size].
+    return Center(
+      widthFactor: 1,
+      heightFactor: 1,
+      child: asset != null
+          ? SvgPicture.asset(
+              asset,
+              width: size,
+              height: size,
+              fit: BoxFit.contain,
+              colorFilter:
+                  ColorFilter.mode(color ?? AppColors.text, BlendMode.srcIn),
+            )
+          : _painted(),
+    );
   }
 
   Widget _painted() => CustomPaint(
