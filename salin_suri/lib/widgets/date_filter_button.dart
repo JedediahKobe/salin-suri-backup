@@ -93,11 +93,14 @@ class SearchFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (context, c) => OverflowBox(
-        minWidth: c.maxWidth + 12,
-        maxWidth: c.maxWidth + 12,
-        child: SizedBox(
-          height: 50,
+      // The list gives unbounded height, so pin the height outside the OverflowBox.
+      builder: (context, c) => SizedBox(
+        height: 50,
+        child: OverflowBox(
+          minWidth: c.maxWidth + 12,
+          maxWidth: c.maxWidth + 12,
+          minHeight: 50,
+          maxHeight: 50,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5),
             child: Row(
