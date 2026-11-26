@@ -103,9 +103,21 @@ class _HomeScreenState extends State<HomeScreen> {
             listenable: LiveReadings.instance,
             builder: (context, _) {
               final live = LiveReadings.instance.snapshot;
-              final r = _isPre ? live.pre : live.post;
-              final within =
-                  r.ph >= 6.5 && r.ph <= 8.5 && r.turbidity <= 5 && r.tds <= 600;
+              double? pick(SensorSpec sp) {
+                final d = live.parameter(sp.id);
+                return _isPre ? d.pre : d.post;
+              }
+
+              final temp = pick(SensorSpec.temperature);
+              final ph = pick(SensorSpec.ph);
+              final turb = pick(SensorSpec.turbidity);
+              final tds = pick(SensorSpec.tds);
+              final hasData =
+                  temp != null && ph != null && turb != null && tds != null;
+              final within = hasData &&
+                  SensorSpec.ph.within(ph) &&
+                  SensorSpec.turbidity.within(turb) &&
+                  SensorSpec.tds.within(tds);
               return Column(
                 children: [
                   AnimatedSwitcher(
@@ -114,10 +126,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       key: ValueKey(_stage),
                       height: 107,
                       cells: [
-                        StatCell(label: 'Temperature', value: r.temperatureText),
-                        StatCell(label: 'pH level', value: r.phText),
-                        StatCell(label: 'Turbidity', value: r.turbidityText),
-                        StatCell(label: 'TDS', value: r.tdsText),
+                        StatCell(
+                            label: 'Temperature',
+                            value: SensorSpec.temperature.formatOrDash(temp)),
+                        StatCell(
+                            label: 'pH level',
+                            value: SensorSpec.ph.formatOrDash(ph)),
+                        StatCell(
+                            label: 'Turbidity',
+                            value: SensorSpec.turbidity.formatOrDash(turb)),
+                        StatCell(
+                            label: 'TDS',
+                            value: SensorSpec.tds.formatOrDash(tds)),
                       ],
                     ),
                   ),
@@ -126,7 +146,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Expanded(
                           child: _StatusCard(
-                              title: within ? 'Within Range' : 'Out of Range',
+                              title: !hasData
+                                  ? '--'
+                                  : (within ? 'Within Range' : 'Out of Range'),
                               caption: 'Water Quality Range')),
                       const SizedBox(width: 6),
                       Expanded(

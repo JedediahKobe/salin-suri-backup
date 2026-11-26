@@ -4,25 +4,26 @@ import '../data/sensor_specs.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 import '../data/filtration_records.dart';
+import '../data/notification_store.dart';
 import 'history_details_screen.dart';
 
-/// Notification Details for the Pre Filtration Alert (Figma 423:148). Opened from the pH Alert in Notification.
-/// Reading and timestamp are dummy data until alerts come from the backend.
+/// Notification Details for the Pre Filtration Alert (Figma 423:148). Opened from the pH
+/// Alert in Notification; the readings come from the [AlertItem].
 class PhAlertDetailsScreen extends StatelessWidget {
-  const PhAlertDetailsScreen({super.key});
+  const PhAlertDetailsScreen({super.key, required this.alert});
 
-  static const _ph = 9.8;
-  static const _turbidity = 6.0;
+  final AlertItem alert;
+
   static const _turbidityMax = 5.0;
-  static const _recorded = '27/10/26, 9:10am';
   static Color get _grey => AppColors.muted;
 
   @override
   Widget build(BuildContext context) {
     const spec = SensorSpec.ph;
     final min = spec.limitMin!, max = spec.limitMax!;
-    final phAbove = _ph > max;
-    final turbAbove = _turbidity > _turbidityMax;
+    final ph = alert.ph, turbidity = alert.turbidity;
+    final phAbove = ph != null && ph > max;
+    final turbAbove = turbidity != null && turbidity > _turbidityMax;
 
     return Scaffold(
       appBar: const AppTopBar(title: 'Pre-Filtration Alert', showBack: true),
@@ -45,24 +46,27 @@ class PhAlertDetailsScreen extends StatelessWidget {
                           style: AppText.sf(13, color: AppColors.alert)),
                     ],
                   ),
-                  Text('Pre-filtration pH and turbidity exceeded the reference range.',
+                  Text(alert.body,
                       style: AppText.sf(14, color: _grey).copyWith(height: 20 / 14)),
                   const SizedBox(height: 15),
                   Divider(height: 1, thickness: 1, color: AppColors.divider),
                   const SizedBox(height: 15),
-                  _Reading(
-                    value: _ph.toStringAsFixed(1),
-                    status: phAbove ? 'Above reference range' : 'Within reference range',
-                    bad: phAbove,
-                    range: 'ph reference range: $min-$max',
-                  ),
-                  const SizedBox(height: 15),
-                  _Reading(
-                    value: _turbidity.toStringAsFixed(1),
-                    status: turbAbove ? 'Above reference range' : 'Within reference range',
-                    bad: turbAbove,
-                    range: 'NTU reference range: \u2264${_turbidityMax.toStringAsFixed(0)} NTU',
-                  ),
+                  if (ph != null)
+                    _Reading(
+                      value: ph.toStringAsFixed(1),
+                      status: phAbove ? 'Above reference range' : 'Within reference range',
+                      bad: phAbove,
+                      range: 'ph reference range: $min-$max',
+                    ),
+                  if (turbidity != null) ...[
+                    const SizedBox(height: 15),
+                    _Reading(
+                      value: turbidity.toStringAsFixed(1),
+                      status: turbAbove ? 'Above reference range' : 'Within reference range',
+                      bad: turbAbove,
+                      range: 'NTU reference range: \u2264${_turbidityMax.toStringAsFixed(0)} NTU',
+                    ),
+                  ],
                   const SizedBox(height: 15),
                   Text('What happened?', style: AppText.sf(18)),
                   const SizedBox(height: 15),
@@ -73,6 +77,7 @@ class PhAlertDetailsScreen extends StatelessWidget {
                     style: AppText.sf(18),
                   ),
                   const SizedBox(height: 15),
+                  if (_alertRecord(alert) != null)
                   Center(
                     child: SizedBox(
                       width: 346,
@@ -89,7 +94,7 @@ class PhAlertDetailsScreen extends StatelessWidget {
                         onPressed: () => Navigator.of(context).push(
                             MaterialPageRoute(
                                 builder: (_) => HistoryDetailsScreen(
-                                    record: _alertRecord()))),
+                                    record: _alertRecord(alert)!))),
                         child: Text('View Filtration Details',
                             style: AppText.sf(15, weight: FontWeight.w600)),
                       ),
@@ -98,7 +103,7 @@ class PhAlertDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 15),
                   Divider(height: 1, thickness: 1, color: AppColors.divider),
                   const SizedBox(height: 15),
-                  Text('Notified at $_recorded',
+                  Text('Notified at ${alert.time}',
                       style: AppText.sf(13, color: _grey)),
                 ],
               ),
@@ -159,14 +164,14 @@ class _Reading extends StatelessWidget {
   }
 }
 
-/// The pre-filtration run the alert was raised for (#135). Falls back to the first record
-/// when the database doesn't have that number.
-FiltrationRecord _alertRecord() {
-  final all = [
-    ...FiltrationStore.instance.active,
-    ...FiltrationStore.instance.archived,
-    ...FiltrationStore.instance.deleted,
-  ];
-  return all.firstWhere((r) => r.number == 135,
-      orElse: () => all.isNotEmpty ? all.first : FiltrationRecord.sample.last);
+/// The filtration run this alert was raised for, or null when the alert doesn't name one
+/// (or the run isn't in the loaded history).
+FiltrationRecord? _alertRecord(AlertItem alert) {
+  final n = alert.filtrationNumber;
+  if (n == null) return null;
+  final store = FiltrationStore.instance;
+  for (final r in [...store.active, ...store.archived, ...store.deleted]) {
+    if (r.number == n) return r;
+  }
+  return null;
 }

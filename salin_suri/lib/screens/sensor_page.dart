@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/live_readings.dart';
 import '../data/sample_data.dart';
 import '../data/parameter_info.dart';
 import '../data/sensor_specs.dart';
@@ -26,10 +27,20 @@ class _SensorPageState extends State<SensorPage> {
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: LiveReadings.instance,
+      builder: (context, _) => _buildPage(
+          context, LiveReadings.instance.snapshot.parameter(widget.spec.id)),
+    );
+  }
+
+  Widget _buildPage(BuildContext context, ParameterData data) {
     final s = widget.spec;
-    final change = (s.post - s.pre).abs();
+    final pre = data.pre, post = data.post;
+    final hasChange = pre != null && post != null;
+    final change = hasChange ? (post! - pre!).abs() : 0.0;
     // Figma annotation: when post is higher than pre the arrow flips (up) and turns red.
-    final postHigher = s.post > s.pre;
+    final postHigher = hasChange && post! > pre!;
     final isPre = _stage == 'Pre-filtration';
 
     return Scaffold(
@@ -75,19 +86,19 @@ class _SensorPageState extends State<SensorPage> {
             trailing: s.hasStatusLink
                 ? SensorStatusPill(
                     onTap: () => showSensorStatusModal(context))
-                : Text('Sample data',
-                    style: AppText.sf(11,
-                        weight: FontWeight.w500, color: AppColors.muted)),
+                : null,
           ),
           const SizedBox(height: 11),
           StatsPanel(
             cells: [
-              StatCell(label: 'Pre-Filtration', value: s.format(s.pre)),
-              StatCell(label: s.postLabel, value: s.format(s.post)),
+              StatCell(label: 'Pre-Filtration', value: s.formatOrDash(pre)),
+              StatCell(label: s.postLabel, value: s.formatOrDash(post)),
               StatCell(
                 label: s.changeLabel,
-                value: change.toStringAsFixed(s.decimals),
-                valueWidget: Row(
+                value: '--',
+                valueWidget: !hasChange
+                    ? Text('--', style: AppText.sf(17, weight: FontWeight.w600))
+                    : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
@@ -130,7 +141,7 @@ class _SensorPageState extends State<SensorPage> {
                 LineChart(
                   series: [
                     ChartSeries(
-                      values: isPre ? s.preSeries : s.postSeries,
+                      values: isPre ? data.preSeries : data.postSeries,
                       colors: SampleData.gradient,
                     ),
                   ],

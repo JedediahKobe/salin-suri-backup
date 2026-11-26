@@ -4,7 +4,6 @@ import 'backend/repositories.dart';
 import 'backend/time_format.dart';
 
 /// A maintenance entry (Figma Maintenance History 689:169 / details 689:298).
-/// Dummy data until a real source exists.
 class MaintenanceRecord {
   MaintenanceRecord({
     this.id = '',
@@ -90,8 +89,8 @@ class MaintenanceRecord {
 
   /// Totals shown on the Maintenance History summary card (Figma 689:169). The base
   /// counts stand in for older reports that aren't listed.
-  static int _baseCompleted = 86;
-  static int _basePending = 7;
+  static int _baseCompleted = 0;
+  static int _basePending = 0;
 
   static int get completedCount =>
       _baseCompleted + store.value.where((r) => r.completed).length;
@@ -135,31 +134,4 @@ class MaintenanceRecord {
     archived.value = snap.lists.archived;
     deleted.value = snap.lists.deleted;
   }
-
-  /// Built-in sample reports, used when no database is connected.
-  static List<MaintenanceRecord> sample() => [
-    MaintenanceRecord(
-        number: 135,
-        when: DateTime(2026, 11, 1, 16, 30),
-        replaced: true,
-        recordedAt: DateTime(2026, 11, 1, 11, 43)),
-    MaintenanceRecord(number: 134, when: DateTime(2026, 10, 31, 14, 0)),
-    MaintenanceRecord(
-        number: 133,
-        when: DateTime(2026, 10, 30, 10, 0),
-        replaced: true,
-        recordedAt: DateTime(2026, 10, 30, 12, 10)),
-    MaintenanceRecord(number: 132, when: DateTime(2026, 10, 29, 11, 45)),
-    MaintenanceRecord(number: 131, when: DateTime(2026, 10, 28, 15, 0)),
-    MaintenanceRecord(
-        number: 130,
-        when: DateTime(2026, 10, 27, 13, 30),
-        replaced: true,
-        recordedAt: DateTime(2026, 10, 27, 15, 5)),
-    MaintenanceRecord(
-        number: 129,
-        when: DateTime(2026, 10, 26, 17, 15),
-        replaced: true,
-        recordedAt: DateTime(2026, 10, 26, 18, 0)),
-    ];
 }

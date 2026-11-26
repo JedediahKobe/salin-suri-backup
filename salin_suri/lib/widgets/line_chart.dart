@@ -76,6 +76,27 @@ class _LineChartState extends State<LineChart>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.series.every((s) => s.values.isEmpty)) {
+      return SizedBox(
+        height: widget.height,
+        width: double.infinity,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.show_chart_rounded, size: 32, color: AppColors.muted),
+              const SizedBox(height: 8),
+              Text('No readings yet',
+                  style: AppText.sf(14, weight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Text('The chart appears once the device reports.',
+                  textAlign: TextAlign.center,
+                  style: AppText.sf(12, color: AppColors.muted)),
+            ],
+          ),
+        ),
+      );
+    }
     return SizedBox(
       height: widget.height,
       width: double.infinity,

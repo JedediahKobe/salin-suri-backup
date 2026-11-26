@@ -12,27 +12,23 @@ class HistoryDetailsScreen extends StatelessWidget {
 
   static Color get _grey => AppColors.muted;
 
-  /// Pre / post values for this run. Each record only stores its own stage, so the other
-  /// stage is estimated until the device reports both. #135 uses the Figma (623:954) values.
-  static const _fig135Pre = (ph: 9.0, temp: 27.6, turb: 6.0, tds: 280.0);
-  static const _fig135Post = (ph: 6.5, temp: 27.3, turb: 5.8, tds: 180.0);
-
   @override
   Widget build(BuildContext context) {
     final r = record;
-    final own = (ph: r.ph, temp: r.temperature, turb: r.turbidity, tds: r.tds);
-    final est = r.isPre
-        ? (ph: r.ph * 0.78, temp: r.temperature - 0.3, turb: r.turbidity * 0.4, tds: r.tds * 0.65)
-        : (ph: r.ph / 0.78, temp: r.temperature + 0.3, turb: r.turbidity / 0.4, tds: r.tds / 0.65);
-    final pre = r.number == 135 ? _fig135Pre : (r.isPre ? own : est);
-    final post = r.number == 135 ? _fig135Post : (r.isPre ? est : own);
+    final own = RunReading(
+        ph: r.ph, temperature: r.temperature, turbidity: r.turbidity, tds: r.tds);
+    final pre = r.isPre ? own : r.counterpart;
+    final post = r.isPre ? r.counterpart : own;
+    final complete = pre != null && post != null;
 
-    String f1(double v) => v.toStringAsFixed(1);
+    String f1(double? v) => v == null ? '--' : v.toStringAsFixed(1);
+    String unit(String v, String u) => v == '--' ? v : '$v $u';
+    String tds(double? v) => v == null ? '--' : '${v.round()} mg/L';
     final rows = [
-      (f1(pre.ph) + ' pH', f1(post.ph) + ' pH', true),
-      (f1(pre.turb) + ' NTU', f1(post.turb) + ' NTU', true),
-      (f1(pre.temp) + ' \u00B0C', f1(post.temp) + ' \u00B0C', false),
-      (pre.tds.round().toString() + ' mg/L', post.tds.round().toString() + ' mg/L', true),
+      (unit(f1(pre?.ph), 'pH'), unit(f1(post?.ph), 'pH'), true),
+      (unit(f1(pre?.turbidity), 'NTU'), unit(f1(post?.turbidity), 'NTU'), true),
+      (unit(f1(pre?.temperature), '\u00B0C'), unit(f1(post?.temperature), '\u00B0C'), false),
+      (tds(pre?.tds), tds(post?.tds), true),
     ];
 
     return Scaffold(
@@ -79,10 +75,12 @@ class HistoryDetailsScreen extends StatelessWidget {
                               style: AppText.sf(25, weight: FontWeight.w700)),
                           const SizedBox(height: 12),
                           Text(
-                            '${r.title} reduced pH from ${f1(pre.ph)} to ${f1(post.ph)}, '
-                            'temperature from ${f1(pre.temp)} to ${f1(post.temp)} \u00B0C, '
-                            'and TDS from ${pre.tds.round()} to ${post.tds.round()} mg/L. '
-                            'The turbidity reading decreased from ${f1(pre.turb)} to ${f1(post.turb)}.',
+                            complete
+                                ? '${r.title} changed pH from ${f1(pre!.ph)} to ${f1(post!.ph)}, '
+                                    'temperature from ${f1(pre!.temperature)} to ${f1(post!.temperature)} \u00B0C, '
+                                    'and TDS from ${pre!.tds.round()} to ${post!.tds.round()} mg/L. '
+                                    'The turbidity reading went from ${f1(pre!.turbidity)} to ${f1(post!.turbidity)} NTU.'
+                                : 'A summary will appear once both the pre- and post-filtration readings of this run have been recorded.',
                             style: AppText.sf(16),
                           ),
                           const SizedBox(height: 12),

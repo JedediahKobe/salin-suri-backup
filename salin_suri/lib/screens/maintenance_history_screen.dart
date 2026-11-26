@@ -131,12 +131,14 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
  ),
                       const SizedBox(height: 11),
                       if (items.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 60),
-                          child: Center(
-                            child: Text('No maintenance found',
-                                style: AppText.sf(14, color: AppColors.muted)),
-                          ),
+                        EmptyState(
+                          icon: Icons.build_circle_outlined,
+                          title: all.isEmpty
+                              ? 'No maintenance reports yet'
+                              : 'No maintenance found',
+                          message: all.isEmpty
+                              ? 'Maintenance reports will appear here when filter upkeep is due.'
+                              : 'Try a different search or date filter.',
                         ),
                       for (final r in items) ...[
                         Row(

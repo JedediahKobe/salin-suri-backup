@@ -18,9 +18,12 @@ import 'repositories.dart';
 ///   users/{uid}/maintenanceRecords/{id}  { number, when, replaced, recordedAt, status }
 ///   users/{uid}/notifications/{id}       { title, body, createdAt, unread,
 ///                                          opensPhDetails, status }
-///   devices/{deviceId}                   { connected, updatedAt, flowRate,
-///                                          pre{temperature,ph,turbidity,tds},
-///                                          post{...} }   ← written by the ESP-32
+///   devices/{deviceId}                   { connected, updatedAt, connectionType, flowRate,
+///                                          flowSeries[],
+///                                          parameters{ph|temperature|turbidity|tds:
+///                                            {pre, post, preSeries[], postSeries[],
+///                                             historyPreSeries[], historyPostSeries[]}} }
+///                                        ← written by the ESP-32
 class FirebaseBackend {
   FirebaseBackend._(this.filtration, this.maintenance, this.notifications, this.sensors);
 
@@ -175,13 +178,7 @@ class _FsSensors implements SensorRepository {
     }
     yield* _db.collection('devices').doc(deviceId).snapshots().map((doc) {
       final m = _plain(doc.data() ?? const {});
-      return LiveSnapshot(
-        pre: StageReading.fromMap(m['pre'] as Map<String, dynamic>?),
-        post: StageReading.fromMap(m['post'] as Map<String, dynamic>?),
-        connected: m['connected'] as bool? ?? false,
-        updatedAt: m['updatedAt'] as DateTime?,
-        flowRate: (m['flowRate'] as num?)?.toDouble(),
-      );
+      return LiveSnapshot.fromMap({...m, 'deviceId': deviceId});
     });
   }
 }
