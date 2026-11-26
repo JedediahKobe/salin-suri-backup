@@ -192,8 +192,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   : GestureDetector(
                       onTap: _openFilter,
                       child: Container(
-                        width: 35,
-                        height: 35,
+                        width: 30,
+                        height: 30,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: AppColors.iconChip,
@@ -203,7 +203,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               : Border.all(color: AppColors.accent),
                         ),
                         child: AppIcon(AppIconType.filterLines,
-                            size: 18, color: AppColors.accent),
+                            size: 14, color: AppColors.accent),
                       ),
                     ),
             ),
@@ -316,7 +316,7 @@ class AlertTile extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: AppColors.iconChip, shape: BoxShape.circle),
                 child: const AppIcon(AppIconType.circleAlert,
-                    color: AppColors.alertRed, size: 32, strokeWidth: 1.8),
+                    color: AppColors.alertRed, size: 26, strokeWidth: 1.6),
               ),
               const SizedBox(width: 5),
               Expanded(
