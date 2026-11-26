@@ -79,7 +79,7 @@ class _SensorPageState extends State<SensorPage> {
                     style: AppText.sf(11,
                         weight: FontWeight.w500, color: AppColors.muted)),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 11),
           StatsPanel(
             cells: [
               StatCell(label: 'Pre-Filtration', value: s.format(s.pre)),

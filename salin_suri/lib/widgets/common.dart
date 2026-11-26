@@ -593,7 +593,7 @@ class SensorStatusPill extends StatelessWidget {
         onTap: onTap,
         child: Container(
           width: 89,
-          height: 17,
+          height: 20,
           decoration: BoxDecoration(
               color: StatusBadge.connectedColor,
               borderRadius: BorderRadius.circular(10)),

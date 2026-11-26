@@ -164,7 +164,7 @@ class _DocumentationCard extends StatelessWidget {
                 style: AppText.sf(13, color: AppColors.muted)),
           ] else ...[
             Text('Please confirm whether the filter replacement has been conducted.',
-                style: AppText.sf(18, color: AppColors.muted)),
+                style: AppText.sf(18)),
             const SizedBox(height: 20),
             _Option(
                 label: 'Yes, replacement completed',
@@ -177,6 +177,7 @@ class _DocumentationCard extends StatelessWidget {
                 sub: 'Keep the maintenance status pending.',
                 selected: choice == false,
                 onTap: () => onChanged(choice == false ? null : false)),
+            if (choice != null) ...[
             const SizedBox(height: 20),
             Container(
               height: 80,
@@ -197,7 +198,6 @@ class _DocumentationCard extends StatelessWidget {
                 ),
               ),
             ),
-            if (choice != null) ...[
               divider,
               Center(
                 child: SizedBox(
