@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../data/backend/time_format.dart';
+import '../data/live_readings.dart';
 import '../data/sensor_specs.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
+import '../widgets/segmented_tabs.dart';
 import 'history_screen.dart';
 import 'sensors_screen.dart';
 
@@ -15,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _stage = 'Pre-filtration';
+  bool _badgeOpen = false; // Figma: 'closed' glyph by default, tap to expand
 
   bool get _isPre => _stage == 'Pre-filtration';
 
@@ -30,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // ── Sensors ───────────────────────────────────────────
           SectionTitle(
             'Sensors',
+            size: 24,
             trailing: TextButton(
               onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SensorsScreen())),
@@ -44,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                for (final s in SensorInfo.all.take(3)) ...[
+                for (final s in _homeSensors) ...[
                   SensorCard(info: s, width: 143, radius: 20),
                   const SizedBox(width: 15),
                 ],
@@ -54,59 +59,85 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 28),
 
           // ── Live dashboard ────────────────────────────────────
-          SectionTitle(
-            'Live Dashboard',
-            trailing: DropdownPill(
-              value: _stage,
-              options: const ['Pre-filtration', 'Post-filtration'],
-              onChanged: (v) => setState(() => _stage = v),
-            ),
-          ),
-          const SizedBox(height: 8),
-          // Values change depending on pre or post filtration (Figma annotation).
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            child: StatsPanel(
-              key: ValueKey(_stage),
-              height: 159,
-              header: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Last Updated:', style: AppText.sf(13)),
-                      const SizedBox(height: 4),
-                      Text('September 24 • 10:37 am',
-                          style: AppText.sf(14, weight: FontWeight.w600)),
-                    ],
+          SizedBox(
+            height: 32,
+            child: Row(
+              children: [
+                // Status badge sits left of the title (Figma 729:194); it shows the Offline
+                // badge instead when the device is disconnected.
+                ListenableBuilder(
+                  listenable: LiveReadings.instance,
+                  builder: (context, _) => StatusBadge(
+                    connected: LiveReadings.instance.snapshot.connected,
+                    expanded: _badgeOpen,
+                    onTap: () => setState(() => _badgeOpen = !_badgeOpen),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text('Battery Percentage:', style: AppText.sf(13)),
-                      const SizedBox(height: 4),
-                      Text('87%',
-                          style: AppText.sf(14, weight: FontWeight.w600)),
-                    ],
-                  ),
-                ],
-              ),
-              cells: [
-                StatCell(label: 'Temperature', value: _isPre ? '29.6 °C' : '28.9 °C'),
-                StatCell(label: 'pH level', value: _isPre ? '9.8' : '7.2'),
-                StatCell(label: 'Turbidity', value: _isPre ? '8.4 NTU' : '2.1 NTU'),
-                StatCell(label: 'TDS', value: _isPre ? '240 ppm' : '118 ppm'),
+                ),
+                const SizedBox(width: 6),
+                Text('Live Dashboard',
+                    style: AppText.sf(24, weight: FontWeight.w700)),
               ],
             ),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: const [
-              Expanded(child: _StatusCard(title: 'Within Range', caption: 'Water Quality Range')),
-              SizedBox(width: 6),
-              Expanded(child: _StatusCard(title: 'Connected', caption: 'Device Status')),
-            ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 6, 10, 10),
+            child: ListenableBuilder(
+              listenable: LiveReadings.instance,
+              builder: (context, _) {
+                final t = LiveReadings.instance.snapshot.updatedAt;
+                return Text(t == null ? 'Last Updated: --' : 'Last Updated: ${liveTime(t)}',
+                    style: AppText.sf(12,
+                        weight: FontWeight.w500, color: AppColors.muted));
+              },
+            ),
+          ),
+          SegmentedTabs(
+            labels: const ['Pre-filtration', 'Post-filtration'],
+            selectedIndex: _isPre ? 0 : 1,
+            onChanged: (i) =>
+                setState(() => _stage = i == 0 ? 'Pre-filtration' : 'Post-filtration'),
+          ),
+          const SizedBox(height: 8),
+          // Values change depending on pre or post filtration (Figma annotation).
+          ListenableBuilder(
+            listenable: LiveReadings.instance,
+            builder: (context, _) {
+              final live = LiveReadings.instance.snapshot;
+              final r = _isPre ? live.pre : live.post;
+              final within =
+                  r.ph >= 6.5 && r.ph <= 8.5 && r.turbidity <= 5 && r.tds <= 600;
+              return Column(
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: StatsPanel(
+                      key: ValueKey(_stage),
+                      height: 107,
+                      cells: [
+                        StatCell(label: 'Temperature', value: r.temperatureText),
+                        StatCell(label: 'pH level', value: r.phText),
+                        StatCell(label: 'Turbidity', value: r.turbidityText),
+                        StatCell(label: 'TDS', value: r.tdsText),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: _StatusCard(
+                              title: within ? 'Within Range' : 'Out of Range',
+                              caption: 'Water Quality Range')),
+                      const SizedBox(width: 6),
+                      Expanded(
+                          child: _StatusCard(
+                              title: live.connected ? 'Connected' : 'Offline',
+                              caption: 'Device Status')),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 28),
 
@@ -128,6 +159,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+/// Home carousel order (Figma 731:297): Water Flow first, then the four parameters.
+final _homeSensors = <SensorInfo>[
+  ...SensorInfo.all.where((s) => s.isFlow),
+  ...SensorInfo.all.where((s) => !s.isFlow),
+];
+
 class _Insight {
   const _Insight(this.title, this.subtitle, this.spec);
 
@@ -137,12 +174,12 @@ class _Insight {
 }
 
 const _insights = <_Insight>[
-  _Insight('pH Level Monitoring', 'Monitoring ph Level changes', SensorSpec.ph),
-  _Insight('Water Temperature Monitoring', 'Monitoring temperature changes',
+  _Insight('pH Level Monitoring', 'View detailed ph Level changes', SensorSpec.ph),
+  _Insight('Water Temperature Monitoring', 'View detailed temperature changes',
       SensorSpec.temperature),
-  _Insight('Turbidity Monitoring', 'Monitoring turbidity changes',
+  _Insight('Turbidity Monitoring', 'View detailed turbidity changes',
       SensorSpec.turbidity),
-  _Insight('TDS Monitoring', 'Monitoring TDS changes', SensorSpec.tds),
+  _Insight('TDS Monitoring', 'View detailed TDS changes', SensorSpec.tds),
 ];
 
 /// 385x80 card, r10, with title/subtitle and a chevron-right.

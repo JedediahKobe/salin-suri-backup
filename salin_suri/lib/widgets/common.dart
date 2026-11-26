@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
@@ -12,11 +13,15 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.showBack = false,
     this.trailing,
+    this.leading,
   });
 
   final String title;
   final bool showBack;
   final Widget? trailing;
+
+  /// Replaces the back button (e.g. the selection-mode check on Filtration History).
+  final Widget? leading;
 
   static const double _barHeight = 56;
 
@@ -48,7 +53,9 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
             children: [
               Text(title,
                   style: AppText.sf(20, weight: FontWeight.w900)),
-              if (showBack)
+              if (leading != null)
+                Positioned(left: 15, child: leading!)
+              else if (showBack)
                 Positioned(
                   left: 15,
                   child: CircleChip(
@@ -97,7 +104,10 @@ class CircleChip extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             if (appIcon != null)
-              AppIcon(appIcon!, color: AppColors.accent, size: size * 0.66)
+              AppIcon(appIcon!,
+                  color: AppColors.accent,
+                  // The exported bulb SVG is 18x17 in a 35 chip.
+                  size: appIcon == AppIconType.bulb ? size * 0.52 : size * 0.66)
             else
               Icon(icon, color: AppColors.accent, size: size * 0.62),
             if (dot)
@@ -119,7 +129,9 @@ class CircleChip extends StatelessWidget {
 }
 
 class SectionTitle extends StatelessWidget {
-  const SectionTitle(this.text, {super.key, this.trailing});
+  const SectionTitle(this.text, {super.key, this.trailing, this.size = 22});
+
+  final double size;
 
   final String text;
   final Widget? trailing;
@@ -129,7 +141,7 @@ class SectionTitle extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(text, style: AppText.sf(22, weight: FontWeight.w700)),
+        Text(text, style: AppText.sf(size, weight: FontWeight.w700)),
         if (trailing != null) trailing!,
       ],
     );
@@ -441,4 +453,170 @@ class AppToggle extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Radio dot from the Figma "Radio Button" component (726:134): green ring, with a
+/// filled centre when selected.
+class AppRadio extends StatelessWidget {
+  const AppRadio({super.key, required this.selected, this.onTap});
+
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: 20,
+        height: 20,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.accent, width: 2),
+        ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: selected ? 10 : 0,
+          height: selected ? 10 : 0,
+          decoration:
+              BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
+        ),
+      ),
+    );
+  }
+}
+
+/// Selection checkbox for list rows (Figma "check" component, 873:413): a green ring,
+/// filled with a check mark when selected.
+class AppCheck extends StatelessWidget {
+  const AppCheck({super.key, required this.selected, this.onTap});
+
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 20,
+        height: 20,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: selected ? AppColors.accent : Colors.transparent,
+          border: Border.all(color: AppColors.accent, width: 1.5),
+        ),
+        child: selected
+            ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
+            : null,
+      ),
+    );
+  }
+}
+
+
+/// Status badge (Figma "Status Badge" 910:1062 connected, 921:305 offline). Collapsed it
+/// is a 24px round glyph; expanded it shows the label too. Tap toggles when [onTap] is set.
+class StatusBadge extends StatelessWidget {
+  const StatusBadge({
+    super.key,
+    required this.connected,
+    this.expanded = true,
+    this.onTap,
+  });
+
+  final bool connected;
+  final bool expanded;
+  final VoidCallback? onTap;
+
+  /// Figma greens: connected #0FAD51, offline uses text-secondary.
+  static const connectedColor = Color(0xFF0FAD51);
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = connected ? connectedColor : AppColors.muted;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 24,
+        padding: const EdgeInsets.symmetric(horizontal: 3.5),
+        decoration: BoxDecoration(
+            color: bg, borderRadius: BorderRadius.circular(20)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // White disc with the exported signal glyph (assets/icons/connected|offline.svg).
+            Container(
+              width: 17,
+              height: 17,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                  color: Colors.white, shape: BoxShape.circle),
+              child: SvgPicture.asset(
+                connected
+                    ? 'assets/icons/connected.svg'
+                    : 'assets/icons/offline.svg',
+                width: connected ? 12 : 10,
+                colorFilter: ColorFilter.mode(bg, BlendMode.srcIn),
+              ),
+            ),
+            if (expanded) ...[
+              const SizedBox(width: 4),
+              Padding(
+                padding: const EdgeInsets.only(right: 1.5),
+                child: Text(connected ? 'Connected' : 'Offline',
+                    style: AppText.sf(10,
+                        weight: connected ? FontWeight.w700 : FontWeight.w400,
+                        color: Colors.white)),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Sensor Status" pill on the sensor pages (Figma 938:357): green, 89x17.
+class SensorStatusPill extends StatelessWidget {
+  const SensorStatusPill({super.key, required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 89,
+          height: 20,
+          decoration: BoxDecoration(
+              color: StatusBadge.connectedColor,
+              borderRadius: BorderRadius.circular(10)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                    color: Colors.white, shape: BoxShape.circle),
+                child: Text('?',
+                    style: AppText.sf(8,
+                        weight: FontWeight.w700,
+                        color: StatusBadge.connectedColor)),
+              ),
+              const SizedBox(width: 5),
+              Text('Sensor Status',
+                  style: AppText.sf(9,
+                      weight: FontWeight.w500, color: Colors.white)),
+            ],
+          ),
+        ),
+      );
 }

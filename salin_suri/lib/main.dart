@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'data/app_prefs.dart';
+import 'data/backend/repositories.dart';
 import 'screens/filter_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/notification_screen.dart';
@@ -12,6 +13,7 @@ import 'widgets/common.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppPrefs.load();
+  await Repos.init(); // sample data, or Firebase with --dart-define=USE_FIREBASE=true
   runApp(const SalinSuriApp());
 }
 
@@ -75,6 +77,9 @@ class _SalinSuriAppState extends State<SalinSuriApp> {
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
+  /// Notification select mode swaps the floating nav for its own bottom bar.
+  static final hideNav = ValueNotifier<bool>(false);
+
   /// Lets a screen inside the shell (e.g. the Home bell) switch tabs.
   static _AppShellState? of(BuildContext context) =>
       context.findAncestorStateOfType<_AppShellState>();
@@ -100,9 +105,14 @@ class _AppShellState extends State<AppShell> {
     return Scaffold(
       extendBody: true,
       body: IndexedStack(index: _index, children: _pages),
-      bottomNavigationBar: PillNavBar(
-        index: _index,
-        onTap: (i) => setState(() => _index = i),
+      bottomNavigationBar: ValueListenableBuilder<bool>(
+        valueListenable: AppShell.hideNav,
+        builder: (context, hidden, _) => hidden
+            ? const SizedBox.shrink()
+            : PillNavBar(
+                index: _index,
+                onTap: (i) => setState(() => _index = i),
+              ),
       ),
     );
   }
