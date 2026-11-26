@@ -15,12 +15,24 @@ class HistoryDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = record;
-    final readings =
-        'pH ${r.phText}, temperature ${r.temperatureText}, turbidity '
-        '${r.turbidityText}, and TDS ${r.tdsText}.';
+    final own = RunReading(
+        ph: r.ph, temperature: r.temperature, turbidity: r.turbidity, tds: r.tds);
+    final pre = r.isPre ? own : r.counterpart;
+    final post = r.isPre ? r.counterpart : own;
+    final complete = pre != null && post != null;
+
+    String f1(double? v) => v == null ? '--' : v.toStringAsFixed(1);
+    String unit(String v, String u) => v == '--' ? v : '$v $u';
+    String tds(double? v) => v == null ? '--' : '${v.round()} mg/L';
+    final rows = [
+      (unit(f1(pre?.ph), 'pH'), unit(f1(post?.ph), 'pH'), true),
+      (unit(f1(pre?.turbidity), 'NTU'), unit(f1(post?.turbidity), 'NTU'), true),
+      (unit(f1(pre?.temperature), '\u00B0C'), unit(f1(post?.temperature), '\u00B0C'), false),
+      (tds(pre?.tds), tds(post?.tds), true),
+    ];
 
     return Scaffold(
-      appBar: const AppTopBar(title: 'Monitoring History', showBack: true),
+      appBar: AppTopBar(title: r.title, showBack: true),
       body: SafeArea(
         top: false,
         child: Padding(
@@ -33,47 +45,27 @@ class HistoryDetailsScreen extends StatelessWidget {
                     SurfaceCard(
                       padding: const EdgeInsets.all(20),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Monitoring Report',
-                                  style: AppText.sf(20, weight: FontWeight.w700)),
-                              Text(r.time,
-                                  style: AppText.sf(13, color: _grey)),
-                            ],
-                          ),
+                          Text('Filtration Report',
+                              style: AppText.sf(20, weight: FontWeight.w700)),
                           const SizedBox(height: 20),
                           Divider(
                               height: 1, thickness: 1, color: AppColors.divider),
                           const SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Expanded(
-                                  child: _Reading(
-                                      value: '${r.phText} pH', label: 'pH Level')),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                  child: _Reading(
-                                      value: r.temperatureText,
-                                      label: 'Temperature')),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                  child: _Reading(
-                                      value: r.turbidityText, label: 'Turbidity')),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                  child: _Reading(value: r.tdsText, label: 'TDS')),
-                            ],
-                          ),
+                          for (final row in rows) ...[
+                            _Pair(pre: row.$1, post: row.$2, bold: row.$3),
+                            const SizedBox(height: 20),
+                          ],
+                          Divider(
+                              height: 1, thickness: 1, color: AppColors.divider),
+                          const SizedBox(height: 20),
+                          Text('Monitored at ${r.time}',
+                              style: AppText.sf(13, color: AppColors.divider)),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 11),
                     SurfaceCard(
                       padding: const EdgeInsets.all(20),
                       child: Column(
@@ -82,26 +74,18 @@ class HistoryDetailsScreen extends StatelessWidget {
                           Text('Report Summary',
                               style: AppText.sf(25, weight: FontWeight.w700)),
                           const SizedBox(height: 12),
-                          Text.rich(
-                            TextSpan(
-                              style: AppText.sf(16, color: AppColors.muted),
-                              children: [
-                                TextSpan(
-                                    text:
-                                        '${r.stage} readings for ${r.title} were '),
-                                TextSpan(
-                                    text: readings,
-                                    style: AppText.sf(16)),
-                                TextSpan(
-                                    text: r.withinThresholds
-                                        ? ' All readings were within the set thresholds.'
-                                        : ' Some readings were outside the set thresholds.'),
-                              ],
-                            ),
+                          Text(
+                            complete
+                                ? '${r.title} changed pH from ${f1(pre!.ph)} to ${f1(post!.ph)}, '
+                                    'temperature from ${f1(pre!.temperature)} to ${f1(post!.temperature)} \u00B0C, '
+                                    'and TDS from ${pre!.tds.round()} to ${post!.tds.round()} mg/L. '
+                                    'The turbidity reading went from ${f1(pre!.turbidity)} to ${f1(post!.turbidity)} NTU.'
+                                : 'A summary will appear once both the pre- and post-filtration readings of this run have been recorded.',
+                            style: AppText.sf(16),
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Note: These parameters are not only the sole basis to determine water is safe to drink.',
+                            'Note: These parameters are not only the sole basis to determine whether the water is safe to drink.',
                             style: AppText.sf(11, color: AppColors.muted),
                           ),
                         ],
@@ -116,10 +100,10 @@ class HistoryDetailsScreen extends StatelessWidget {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.white,
+                    foregroundColor: const Color(0xFFF5F5F5),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
+                        borderRadius: BorderRadius.circular(40)),
                   ),
                   // Back to the Monitoring History list.
                   onPressed: () => Navigator.of(context).pop(),
@@ -135,21 +119,34 @@ class HistoryDetailsScreen extends StatelessWidget {
   }
 }
 
-class _Reading extends StatelessWidget {
-  const _Reading({required this.value, required this.label});
+/// "9.0 pH -> 6.5 pH" row (Figma 961:526): value over its stage label, arrow between.
+class _Pair extends StatelessWidget {
+  const _Pair({required this.pre, required this.post, required this.bold});
 
-  final String value;
-  final String label;
+  final String pre;
+  final String post;
+  final bool bold;
+
+  Widget _cell(String v, String label) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(v,
+              style: AppText.sf(25,
+                  weight: bold ? FontWeight.w700 : FontWeight.w600)),
+          const SizedBox(height: 4),
+          Text(label, style: AppText.sf(15)),
+        ],
+      );
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(value, style: AppText.sf(20, weight: FontWeight.w700)),
-        const SizedBox(height: 4),
-        Text(label, style: AppText.sf(15)),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => Row(
+        children: [
+          Expanded(child: _cell(pre, 'Pre-Filtration')),
+          Icon(Icons.arrow_right_alt_rounded, size: 28, color: AppColors.accent),
+          Expanded(
+              child: Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: _cell(post, 'Post-Filtration'))),
+        ],
+      );
 }

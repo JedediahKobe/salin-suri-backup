@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../data/app_prefs.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
+import 'about_screen.dart';
+import 'device_info_screen.dart';
+import 'records_bin_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -25,8 +28,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Device',
             caption: 'Manage your device connection and view hardware details.',
             rows: [
-              _Row(label: 'Device Connection', onTap: () {}),
-              _Row(label: 'Device Information', onTap: () {}),
+              _Row(
+                label: 'Information & Connection',
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const DeviceInfoScreen())),
+              ),
+              _Row(
+                label: 'About Salin-Suri',
+                onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AboutScreen())),
+              ),
             ],
           ),
           _Section(
@@ -51,14 +62,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
               ),
-              _Row(label: 'About Salin-Suri', onTap: () {}),
-            ],
-          ),
-          _Section(
-            title: 'Support',
-            caption: 'Need help? Contact our team.',
-            rows: [
-              _Row(label: 'Contact Us', onTap: () {}),
+              _Row(
+                label: 'Archived Records',
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) =>
+                        RecordsBinScreen(kind: BinKind.archived))),
+              ),
+              _Row(
+                label: 'Recently Deleted',
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) =>
+                        RecordsBinScreen(kind: BinKind.deleted))),
+              ),
             ],
           ),
         ],

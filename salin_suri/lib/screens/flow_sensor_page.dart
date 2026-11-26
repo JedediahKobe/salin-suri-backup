@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/live_readings.dart';
 import '../data/parameter_info.dart';
 import '../data/sample_data.dart';
 import '../theme/app_theme.dart';
@@ -9,17 +10,19 @@ import '../widgets/line_chart.dart';
 import '../widgets/modals/sensor_status_modal.dart';
 
 /// Water Flow sensor page (Figma 676:122). About modal copy: 676:194 / 676:272 / 676:350.
-/// All readings are dummy data.
 class FlowSensorPage extends StatelessWidget {
   const FlowSensorPage({super.key});
 
-  static const _series = <double>[
-    24, 21, 13.8, 16.6, 15, 11.6, 24, 15.5, 8.3, 15.2, 28.6, 20.5, 17.3, 11.6,
-    16, 12.5, 7.8, 10.3, 19.3,
-  ];
-
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: LiveReadings.instance,
+      builder: (context, _) => _buildPage(context, LiveReadings.instance.snapshot),
+    );
+  }
+
+  Widget _buildPage(BuildContext context, LiveSnapshot live) {
+    final rate = live.flowRate;
     return Scaffold(
       appBar: AppTopBar(
         title: 'Water Flow Sensor',
@@ -41,25 +44,20 @@ class FlowSensorPage extends StatelessWidget {
           const SizedBox(height: 30),
           SectionTitle(
             'Real-time Monitoring',
-            trailing: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => showSensorStatusModal(context),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text('Sensor Status',
-                    style: AppText.sf(11,
-                        weight: FontWeight.w500, color: AppColors.accent)),
-              ),
-            ),
+            trailing:
+                SensorStatusPill(onTap: () => showSensorStatusModal(context)),
           ),
           const SizedBox(height: 12),
           StatsPanel(
             cells: [
-              const StatCell(label: 'Water Flow Rate', value: '20L/min'),
+              StatCell(
+                  label: 'Water Flow Rate',
+                  value: rate == null ? '--' : '${rate.toStringAsFixed(rate % 1 == 0 ? 0 : 1)}L/min'),
               StatCell(
                 label: 'Status',
                 value: '',
-                valueWidget: Text('Water is flowing',
+                valueWidget: Text(
+                    rate == null ? '--' : (rate > 0 ? 'Water is flowing' : 'No water flow'),
                     style: AppText.inter(14, weight: FontWeight.w600)),
               ),
             ],
@@ -75,7 +73,7 @@ class FlowSensorPage extends StatelessWidget {
                 const SizedBox(height: 12),
                 LineChart(
                   series: [
-                    ChartSeries(values: _series, colors: SampleData.gradient),
+                    ChartSeries(values: live.flowSeries, colors: SampleData.gradient),
                   ],
                   minY: 6,
                   maxY: 30,

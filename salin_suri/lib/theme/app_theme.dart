@@ -86,6 +86,9 @@ class AppColors {
   static const preSeries = Color(0xFF9B3B2E);
   static const postSeries = Color(0xFF8B5CF6);
   static const alertRed = Color(0xFFD40000);
+
+  /// Figma `alert` variable (#FF8585): pending status, destructive buttons.
+  static const alert = Color(0xFFFF8585);
   static const good = Color(0xFF1DB954);
   static const bad = Color(0xFFD13438);
   static const guideBlue = Color(0xFF4F9BE0);

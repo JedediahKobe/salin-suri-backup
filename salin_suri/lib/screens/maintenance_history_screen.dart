@@ -4,12 +4,18 @@ import '../data/maintenance_records.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_icons.dart';
 import '../widgets/common.dart';
-import '../widgets/modals/add_maintenance_sheet.dart';
+import '../widgets/date_filter_button.dart';
+import '../widgets/modals/actions_menu.dart';
+import '../widgets/modals/confirm_dialog.dart';
+import '../widgets/segmented_tabs.dart';
+import '../widgets/swipe_actions.dart';
+import 'records_bin_screen.dart';
 import 'maintenance_details_screen.dart';
-import 'monitoring_history_screen.dart' show DateFilter;
 
-/// Maintenance History (Figma 689:169): search, add (+), date filter, and a list of
-/// maintenance entries that open their report (689:298).
+/// Maintenance History (Figma 689:169 / select mode 892:615, 892:812): totals card,
+/// Total / Pending / Completed tabs, search, date filter and a list of entries that open
+/// their report (689:298). Edit opens the actions menu (892:715); rows can also be dragged
+/// to reveal archive / delete.
 class MaintenanceHistoryScreen extends StatefulWidget {
   const MaintenanceHistoryScreen({super.key});
 
@@ -19,12 +25,19 @@ class MaintenanceHistoryScreen extends StatefulWidget {
 }
 
 class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
+  static const _tabs = ['Total', 'Pending', 'Completed'];
+
+  int _tab = 0;
   String _query = '';
   DateFilter? _dateFilter;
+  bool _selecting = false;
+  final _selected = <MaintenanceRecord>{};
 
   List<MaintenanceRecord> _visible(List<MaintenanceRecord> all) {
     final q = _query.trim().toLowerCase();
     return all.where((r) {
+      if (_tab == 1 && r.completed) return false;
+      if (_tab == 2 && !r.completed) return false;
       if (_dateFilter != null && !_dateFilter!.matches(r.daysAgo)) return false;
       return q.isEmpty ||
           r.title.toLowerCase().contains(q) ||
@@ -32,153 +45,218 @@ class _MaintenanceHistoryScreenState extends State<MaintenanceHistoryScreen> {
     }).toList();
   }
 
+  void _exitSelect() => setState(() {
+        _selecting = false;
+        _selected.clear();
+      });
+
+  void _toggle(MaintenanceRecord r) => setState(
+      () => _selected.contains(r) ? _selected.remove(r) : _selected.add(r));
+
+  Future<void> _openMenu() async {
+    final choice = await showActionsMenu(context, items: const [
+      ActionsMenuItem('select', 'Select Maintenance', AppIconType.circleCheck),
+      ActionsMenuItem('archived', 'Archived Record', AppIconType.archive),
+      ActionsMenuItem('deleted', 'Recently Deleted', AppIconType.trash),
+    ]);
+    if (!mounted || choice == null) return;
+    switch (choice) {
+      case 'select':
+        setState(() => _selecting = true);
+      case 'archived':
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => RecordsBinScreen(kind: BinKind.archived, initialType: RecordType.maintenance)));
+      case 'deleted':
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (_) => RecordsBinScreen(kind: BinKind.deleted, initialType: RecordType.maintenance)));
+    }
+  }
+
+  Future<void> _apply(
+      {required bool delete, List<MaintenanceRecord>? only}) async {
+    final picked = only ?? _selected.toList();
+    if (picked.isEmpty) return;
+    final many = picked.length > 1;
+    final verb = delete ? 'deleted' : 'archived';
+    final ok = await showConfirmation(
+      context,
+      message: many
+          ? 'These maintenance records will be $verb.'
+          : 'This maintenance record will be $verb.',
+      actionLabel: delete ? 'Delete' : 'Archive',
+    );
+    if (!ok || !mounted) return;
+    delete ? MaintenanceRecord.delete(picked) : MaintenanceRecord.archive(picked);
+    if (_selecting) _exitSelect();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const AppTopBar(title: 'Maintenance History', showBack: true),
-      body: ValueListenableBuilder<List<MaintenanceRecord>>(
-        valueListenable: MaintenanceRecord.store,
-        builder: (context, all, _) {
-          final items = _visible(all);
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(11, 15, 11, 24),
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 40,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(40),
+    return PopScope(
+      canPop: !_selecting,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _exitSelect();
+      },
+      child: Scaffold(
+        appBar: AppTopBar(
+          title: 'Maintenance History',
+          showBack: !_selecting,
+          leading: _selecting ? SelectModeExit(onTap: _exitSelect) : null,
+          trailing: _selecting ? null : EditPill(onTap: _openMenu),
+        ),
+        body: ValueListenableBuilder<List<MaintenanceRecord>>(
+          valueListenable: MaintenanceRecord.store,
+          builder: (context, all, _) {
+            final items = _visible(all);
+            final allSelected = items.isNotEmpty && items.every(_selected.contains);
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(11, 11, 11, 24),
+                    children: [
+                      const _SummaryCard(),
+                      const SizedBox(height: 15),
+                      SegmentedTabs(
+                        labels: _tabs,
+                        selectedIndex: _tab,
+                        onChanged: (i) => setState(() => _tab = i),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.search_rounded,
-                              size: 16, color: AppColors.muted),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              onChanged: (v) => setState(() => _query = v),
-                              style: AppText.sf(12),
-                              cursorColor: AppColors.accent,
-                              decoration: InputDecoration(
-                                isDense: true,
-                                border: InputBorder.none,
-                                hintText: 'Search',
-                                hintStyle:
-                                    AppText.sf(12, color: AppColors.muted),
+                      const SizedBox(height: 11),
+                      SearchFilterBar(
+ hint: 'Search date or maintenance number',
+ onQuery: (v) => setState(() => _query = v),
+ value: _dateFilter,
+ onFilter: (f) => setState(() => _dateFilter = f),
+ ),
+                      const SizedBox(height: 11),
+                      if (items.isEmpty)
+                        EmptyState(
+                          icon: Icons.build_circle_outlined,
+                          title: all.isEmpty
+                              ? 'No maintenance reports yet'
+                              : 'No maintenance found',
+                          message: all.isEmpty
+                              ? 'Maintenance reports will appear here when filter upkeep is due.'
+                              : 'Try a different search or date filter.',
+                        ),
+                      for (final r in items) ...[
+                        Row(
+                          children: [
+                            if (_selecting) ...[
+                              AppCheck(
+                                  selected: _selected.contains(r),
+                                  onTap: () => _toggle(r)),
+                              const SizedBox(width: 12),
+                            ],
+                            Expanded(
+                              child: SwipeActionRow(
+                                enabled: !_selecting,
+                                onArchive: () => _apply(delete: false, only: [r]),
+                                onDelete: () => _apply(delete: true, only: [r]),
+                                child: MaintenanceCard(
+                                  record: r,
+                                  onTap: _selecting
+                                      ? () => _toggle(r)
+                                      : () => Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  MaintenanceDetailsScreen(
+                                                      record: r))),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  _RoundButton(
-                    child: Icon(Icons.add_rounded,
-                        color: AppColors.accent, size: 24),
-                    onTap: () => showAddMaintenanceSheet(context),
-                  ),
-                  const SizedBox(width: 6),
-                  PopupMenuButton<DateFilter>(
-                    tooltip: 'Filter by date',
-                    offset: const Offset(0, 44),
-                    color: AppColors.surface,
-                    elevation: 0,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 105),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: AppColors.divider, width: 0.5),
-                    ),
-                    onSelected: (f) => setState(
-                        () => _dateFilter = _dateFilter == f ? null : f),
-                    itemBuilder: (_) => [
-                      for (final f in DateFilter.values)
-                        PopupMenuItem(
-                          value: f,
-                          height: 27,
-                          child: Center(
-                            child: Text(f.label,
-                                style: AppText.inter(11,
-                                    weight: FontWeight.w500,
-                                    color: AppColors.accent)),
-                          ),
+                          ],
                         ),
+                        const SizedBox(height: 11),
+                      ],
                     ],
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.iconChip,
-                        shape: BoxShape.circle,
-                        border: _dateFilter == null
-                            ? null
-                            : Border.all(color: AppColors.accent),
-                      ),
-                      child: Icon(Icons.filter_list_rounded,
-                          color: AppColors.accent, size: 22),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 11),
-              if (items.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 60),
-                  child: Center(
-                    child: Text('No maintenance found',
-                        style: AppText.sf(14, color: AppColors.muted)),
                   ),
                 ),
-              for (final r in items) ...[
-                _MaintenanceCard(
-                  record: r,
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => MaintenanceDetailsScreen(record: r))),
-                ),
-                const SizedBox(height: 11),
+                if (_selecting)
+                  SelectionBar(
+                    allSelected: allSelected,
+                    hasSelection: _selected.isNotEmpty,
+                    onToggleAll: () => setState(() {
+                      if (allSelected) {
+                        _selected.clear();
+                      } else {
+                        _selected.addAll(items);
+                      }
+                    }),
+                    onArchive: () => _apply(delete: false),
+                    onDelete: () => _apply(delete: true),
+                  ),
               ],
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 }
 
-class _RoundButton extends StatelessWidget {
-  const _RoundButton({required this.child, required this.onTap});
-
-  final Widget child;
-  final VoidCallback onTap;
+/// "No. of Maintenance Report" totals (Figma 689:169).
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard();
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration:
-            BoxDecoration(color: AppColors.iconChip, shape: BoxShape.circle),
-        child: child,
+    final done = MaintenanceRecord.completedCount;
+    final pending = MaintenanceRecord.pendingCount;
+    return SurfaceCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('No. of Maintenance Report',
+              style: AppText.sf(24, weight: FontWeight.w700)),
+          const SizedBox(height: 16),
+          Divider(height: 1, thickness: 1, color: AppColors.divider),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _Stat(done + pending, 'Total Records'),
+              _Stat(pending, 'Pending'),
+              _Stat(done, 'Completed'),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class _MaintenanceCard extends StatelessWidget {
-  const _MaintenanceCard({required this.record, required this.onTap});
+class _Stat extends StatelessWidget {
+  const _Stat(this.value, this.label);
+
+  final int value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('$value', style: AppText.sf(35, weight: FontWeight.w700)),
+            Text(label,
+                style: AppText.sf(15,
+                    weight: FontWeight.w500, color: AppColors.muted)),
+          ],
+        ),
+      );
+}
+
+/// Maintenance list card (Figma 891:480): title and date on the left, status top-right.
+class MaintenanceCard extends StatelessWidget {
+  const MaintenanceCard({super.key, required this.record, required this.onTap});
 
   final MaintenanceRecord record;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final done = record.completed;
     return Material(
       color: AppColors.surface,
       borderRadius: BorderRadius.circular(15),
@@ -188,8 +266,9 @@ class _MaintenanceCard extends StatelessWidget {
         child: SizedBox(
           height: 83,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(13, 12, 14, 10),
+            padding: const EdgeInsets.fromLTRB(13, 15, 14, 14),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
                   child: Column(
@@ -203,8 +282,15 @@ class _MaintenanceCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded,
-                    size: 28, color: AppColors.text),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: Text(done ? 'Completed' : 'Pending',
+                        style: AppText.sf(10,
+                            color: done ? AppColors.accent : AppColors.alert)),
+                  ),
+                ),
               ],
             ),
           ),

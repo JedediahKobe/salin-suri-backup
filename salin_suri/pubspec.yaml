@@ -11,6 +11,11 @@ dependencies:
     sdk: flutter
   google_fonts: ^6.2.1
   shared_preferences: ^2.2.3
+  flutter_svg: ^2.0.10+1
+  # Backend (only used when run with --dart-define=USE_FIREBASE=true)
+  firebase_core: ^3.6.0
+  cloud_firestore: ^5.4.4
+  firebase_auth: ^5.3.1
 
 dev_dependencies:
   flutter_test:
@@ -23,3 +28,4 @@ flutter:
   # The screens fall back to an icon if a file is missing.
   assets:
     - assets/images/
+    - assets/icons/
