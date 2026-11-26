@@ -89,8 +89,7 @@ class PhAlertDetailsScreen extends StatelessWidget {
                         onPressed: () => Navigator.of(context).push(
                             MaterialPageRoute(
                                 builder: (_) => HistoryDetailsScreen(
-                                    record: FiltrationRecord.all.firstWhere(
-                                        (r) => r.number == 135)))),
+                                    record: _alertRecord()))),
                         child: Text('View Filtration Details',
                             style: AppText.sf(15, weight: FontWeight.w600)),
                       ),
@@ -158,4 +157,16 @@ class _Reading extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The pre-filtration run the alert was raised for (#135). Falls back to the first record
+/// when the database doesn't have that number.
+FiltrationRecord _alertRecord() {
+  final all = [
+    ...FiltrationStore.instance.active,
+    ...FiltrationStore.instance.archived,
+    ...FiltrationStore.instance.deleted,
+  ];
+  return all.firstWhere((r) => r.number == 135,
+      orElse: () => all.isNotEmpty ? all.first : FiltrationRecord.sample.last);
 }

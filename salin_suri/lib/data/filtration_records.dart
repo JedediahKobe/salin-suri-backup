@@ -1,9 +1,14 @@
 import 'package:flutter/foundation.dart';
 
+import 'backend/repositories.dart';
+import 'backend/time_format.dart';
+
 /// A past filtration run shown in Monitoring History (Figma 623:831) and its report
 /// (623:954). Dummy data until real history is available.
 class FiltrationRecord {
   const FiltrationRecord({
+    this.id = '',
+    this.timestamp,
     required this.number,
     required this.time,
     required this.isPre,
@@ -12,6 +17,12 @@ class FiltrationRecord {
     required this.turbidity,
     required this.tds,
   });
+
+  /// Database document id ('' for the built-in sample data).
+  final String id;
+
+  /// When the run was recorded. [time] is its display string.
+  final DateTime? timestamp;
 
   final int number;
   final String time;
@@ -22,10 +33,42 @@ class FiltrationRecord {
   final double tds;
 
   /// Age relative to [referenceDate], used by the "filter date" menu.
-  int get daysAgo => referenceDate.difference(DateTime(2026, 10, 26)).inDays;
+  int get daysAgo {
+    final t = timestamp ?? DateTime(2026, 10, 26);
+    final day = DateTime(t.year, t.month, t.day);
+    final today = DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
+    return today.difference(day).inDays;
+  }
 
-  /// Dummy "today" for the sample data (the records are all from 26/10/26).
-  static final referenceDate = DateTime(2026, 10, 27);
+  /// "Today" for the date filter. The sample data is all from 26/10/26, so it is pinned
+  /// there; with a real database it becomes the current time (see [Repos.init]).
+  static DateTime referenceDate = DateTime(2026, 10, 27);
+
+  /// Firestore / JSON shape. `status` is added by the repository.
+  Map<String, dynamic> toMap() => {
+        'number': number,
+        'timestamp': timestamp,
+        'isPre': isPre,
+        'ph': ph,
+        'temperature': temperature,
+        'turbidity': turbidity,
+        'tds': tds,
+      };
+
+  factory FiltrationRecord.fromMap(String id, Map<String, dynamic> m) {
+    final t = m['timestamp'] as DateTime?;
+    return FiltrationRecord(
+      id: id,
+      timestamp: t,
+      number: (m['number'] as num?)?.toInt() ?? 0,
+      time: t == null ? '' : listTime(t),
+      isPre: m['isPre'] as bool? ?? true,
+      ph: (m['ph'] as num?)?.toDouble() ?? 0,
+      temperature: (m['temperature'] as num?)?.toDouble() ?? 0,
+      turbidity: (m['turbidity'] as num?)?.toDouble() ?? 0,
+      tds: (m['tds'] as num?)?.toDouble() ?? 0,
+    );
+  }
 
   String get title => 'Filtration #$number';
   String get stage => isPre ? 'Pre-filtration' : 'Post-filtration';
@@ -39,7 +82,8 @@ class FiltrationRecord {
   bool get withinThresholds =>
       ph >= 6.5 && ph <= 8.5 && turbidity <= 5 && tds <= 600;
 
-  static const all = <FiltrationRecord>[
+  /// Built-in sample runs, used when no database is connected.
+  static const sample = <FiltrationRecord>[
     FiltrationRecord(number: 123, time: '26/10/26, 3:45 pm', isPre: true, ph: 8.5, temperature: 26.2, turbidity: 1.4, tds: 600),
     FiltrationRecord(number: 124, time: '26/10/26, 4:00 pm', isPre: false, ph: 7.2, temperature: 26.0, turbidity: 0.6, tds: 160),
     FiltrationRecord(number: 125, time: '26/10/26, 4:15 pm', isPre: false, ph: 7.0, temperature: 26.1, turbidity: 0.5, tds: 155),
@@ -63,15 +107,24 @@ class FiltrationStore extends ChangeNotifier {
 
   static final instance = FiltrationStore._();
 
-  final active = <FiltrationRecord>[...FiltrationRecord.all];
+  final active = <FiltrationRecord>[];
   final archived = <FiltrationRecord>[];
   final deleted = <FiltrationRecord>[];
 
+  /// Reads all three lists from the repository (called once from [Repos.init]).
+  Future<void> load() async {
+    final data = await Repos.filtration.load();
+    active..clear()..addAll(data.active);
+    archived..clear()..addAll(data.archived);
+    deleted..clear()..addAll(data.deleted);
+    notifyListeners();
+  }
+
   void archive(Iterable<FiltrationRecord> records) =>
-      _move(records, active, archived);
+      _move(records, active, archived, RecordStatus.archived);
 
   void delete(Iterable<FiltrationRecord> records) =>
-      _move(records, active, deleted);
+      _move(records, active, deleted, RecordStatus.deleted);
 
   /// Puts a record from [from] (archived or deleted) back into the active list.
   void restore(FiltrationRecord record, List<FiltrationRecord> from) {
@@ -80,14 +133,19 @@ class FiltrationStore extends ChangeNotifier {
       ..add(record)
       ..sort((a, b) => a.number.compareTo(b.number));
     notifyListeners();
+    persist(Repos.filtration.setStatus([record], RecordStatus.active));
   }
 
   void _move(Iterable<FiltrationRecord> records, List<FiltrationRecord> from,
-      List<FiltrationRecord> to) {
-    final list = records.toList();
-    for (final r in list) {
-      if (from.remove(r)) to.insert(0, r);
+      List<FiltrationRecord> to, RecordStatus status) {
+    final moved = <FiltrationRecord>[];
+    for (final r in records.toList()) {
+      if (from.remove(r)) {
+        to.insert(0, r);
+        moved.add(r);
+      }
     }
     notifyListeners();
+    if (moved.isNotEmpty) persist(Repos.filtration.setStatus(moved, status));
   }
 }

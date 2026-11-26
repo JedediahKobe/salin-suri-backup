@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'data/app_prefs.dart';
+import 'data/backend/repositories.dart';
 import 'screens/filter_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/notification_screen.dart';
@@ -12,6 +13,7 @@ import 'widgets/common.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppPrefs.load();
+  await Repos.init(); // sample data, or Firebase with --dart-define=USE_FIREBASE=true
   runApp(const SalinSuriApp());
 }
 

@@ -1,14 +1,21 @@
 import 'package:flutter/foundation.dart';
 
+import 'backend/repositories.dart';
+import 'backend/time_format.dart';
+
 /// A maintenance entry (Figma Maintenance History 689:169 / details 689:298).
 /// Dummy data until a real source exists.
 class MaintenanceRecord {
   MaintenanceRecord({
+    this.id = '',
     required this.number,
     required this.when,
     this.replaced,
     this.recordedAt,
   });
+
+  /// Database document id ('' for the built-in sample data).
+  final String id;
 
   final int number;
   final DateTime when;
@@ -23,7 +30,24 @@ class MaintenanceRecord {
     replaced = value;
     recordedAt = value ? DateTime.now() : null;
     store.value = [...store.value]; // notify listeners
+    persist(Repos.maintenance.saveDocumentation(this));
   }
+
+  Map<String, dynamic> toMap() => {
+        'number': number,
+        'when': when,
+        'replaced': replaced,
+        'recordedAt': recordedAt,
+      };
+
+  factory MaintenanceRecord.fromMap(String id, Map<String, dynamic> m) =>
+      MaintenanceRecord(
+        id: id,
+        number: (m['number'] as num?)?.toInt() ?? 0,
+        when: (m['when'] as DateTime?) ?? DateTime.now(),
+        replaced: m['replaced'] as bool?,
+        recordedAt: m['recordedAt'] as DateTime?,
+      );
 
   /// "Recorded at 1/11/26 at 11:43am".
   String get recordedText {
@@ -49,9 +73,10 @@ class MaintenanceRecord {
   /// Age relative to [referenceDate], used by the date-filter menu.
   int get daysAgo => referenceDate.difference(when).inDays;
 
-  static final referenceDate = DateTime(2026, 11, 3);
+  /// "Today" for the date filter; pinned for the sample data, current time with a database.
+  static DateTime referenceDate = DateTime(2026, 11, 3);
 
-  static String _two(int n) => n.toString().padLeft(2, '0');
+  static String _two(int n) => two(n);
 
   bool get completed => replaced == true;
 
@@ -65,8 +90,8 @@ class MaintenanceRecord {
 
   /// Totals shown on the Maintenance History summary card (Figma 689:169). The base
   /// counts stand in for older reports that aren't listed.
-  static const _baseCompleted = 86;
-  static const _basePending = 7;
+  static int _baseCompleted = 86;
+  static int _basePending = 7;
 
   static int get completedCount =>
       _baseCompleted + store.value.where((r) => r.completed).length;
@@ -79,23 +104,40 @@ class MaintenanceRecord {
       ValueNotifier<List<MaintenanceRecord>>(<MaintenanceRecord>[]);
 
   static void _move(Iterable<MaintenanceRecord> records,
-      ValueNotifier<List<MaintenanceRecord>> to) {
+      ValueNotifier<List<MaintenanceRecord>> to, RecordStatus status) {
     final list = records.toSet();
     store.value = store.value.where((r) => !list.contains(r)).toList();
     to.value = [...list, ...to.value];
+    persist(Repos.maintenance.setStatus(list, status));
   }
 
-  static void archive(Iterable<MaintenanceRecord> r) => _move(r, archived);
-  static void delete(Iterable<MaintenanceRecord> r) => _move(r, deleted);
+  static void archive(Iterable<MaintenanceRecord> r) =>
+      _move(r, archived, RecordStatus.archived);
+  static void delete(Iterable<MaintenanceRecord> r) =>
+      _move(r, deleted, RecordStatus.deleted);
 
   static void restore(MaintenanceRecord r, ValueNotifier<List<MaintenanceRecord>> from) {
     from.value = from.value.where((x) => x != r).toList();
     store.value = [...store.value, r]..sort((a, b) => b.number.compareTo(a.number));
+    persist(Repos.maintenance.setStatus([r], RecordStatus.active));
   }
 
   /// Newest first.
   static final ValueNotifier<List<MaintenanceRecord>> store =
-      ValueNotifier<List<MaintenanceRecord>>(<MaintenanceRecord>[
+      ValueNotifier<List<MaintenanceRecord>>(<MaintenanceRecord>[]);
+
+  /// Reads all three lists from the repository (called once from [Repos.init]).
+  static Future<void> loadAll() async {
+    final snap = await Repos.maintenance.load();
+    _baseCompleted = snap.olderCompleted;
+    _basePending = snap.olderPending;
+    store.value = snap.lists.active;
+    archived.value = snap.lists.archived;
+    deleted.value = snap.lists.deleted;
+  }
+
+  /// Built-in sample reports, used when no database is connected.
+  static List<MaintenanceRecord> sample() => [
     MaintenanceRecord(
         number: 135,
         when: DateTime(2026, 11, 1, 16, 30),
@@ -119,5 +161,5 @@ class MaintenanceRecord {
         when: DateTime(2026, 10, 26, 17, 15),
         replaced: true,
         recordedAt: DateTime(2026, 10, 26, 18, 0)),
-  ]);
+    ];
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../data/backend/time_format.dart';
+import '../data/live_readings.dart';
 import '../data/sensor_specs.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
@@ -63,10 +65,13 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 // Status badge sits left of the title (Figma 729:194); it shows the Offline
                 // badge instead when the device is disconnected.
-                StatusBadge(
-                  connected: true,
-                  expanded: _badgeOpen,
-                  onTap: () => setState(() => _badgeOpen = !_badgeOpen),
+                ListenableBuilder(
+                  listenable: LiveReadings.instance,
+                  builder: (context, _) => StatusBadge(
+                    connected: LiveReadings.instance.snapshot.connected,
+                    expanded: _badgeOpen,
+                    onTap: () => setState(() => _badgeOpen = !_badgeOpen),
+                  ),
                 ),
                 const SizedBox(width: 6),
                 Text('Live Dashboard',
@@ -76,8 +81,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 6, 10, 10),
-            child: Text('Last Updated: September 24 • 10:37 am',
-                style: AppText.sf(12, weight: FontWeight.w500, color: AppColors.muted)),
+            child: ListenableBuilder(
+              listenable: LiveReadings.instance,
+              builder: (context, _) {
+                final t = LiveReadings.instance.snapshot.updatedAt;
+                return Text(t == null ? 'Last Updated: --' : 'Last Updated: ${liveTime(t)}',
+                    style: AppText.sf(12,
+                        weight: FontWeight.w500, color: AppColors.muted));
+              },
+            ),
           ),
           SegmentedTabs(
             labels: const ['Pre-filtration', 'Post-filtration'],
@@ -87,26 +99,45 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 8),
           // Values change depending on pre or post filtration (Figma annotation).
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            child: StatsPanel(
-              key: ValueKey(_stage),
-              height: 107,
-              cells: [
-                StatCell(label: 'Temperature', value: _isPre ? '29.6 °C' : '28.9 °C'),
-                StatCell(label: 'pH level', value: _isPre ? '7.2' : '7.2'),
-                StatCell(label: 'Turbidity', value: _isPre ? '2.1 NTU' : '2.1 NTU'),
-                StatCell(label: 'TDS', value: _isPre ? '118 ppm' : '118 ppm'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: const [
-              Expanded(child: _StatusCard(title: 'Within Range', caption: 'Water Quality Range')),
-              SizedBox(width: 6),
-              Expanded(child: _StatusCard(title: 'Connected', caption: 'Device Status')),
-            ],
+          ListenableBuilder(
+            listenable: LiveReadings.instance,
+            builder: (context, _) {
+              final live = LiveReadings.instance.snapshot;
+              final r = _isPre ? live.pre : live.post;
+              final within =
+                  r.ph >= 6.5 && r.ph <= 8.5 && r.turbidity <= 5 && r.tds <= 600;
+              return Column(
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: StatsPanel(
+                      key: ValueKey(_stage),
+                      height: 107,
+                      cells: [
+                        StatCell(label: 'Temperature', value: r.temperatureText),
+                        StatCell(label: 'pH level', value: r.phText),
+                        StatCell(label: 'Turbidity', value: r.turbidityText),
+                        StatCell(label: 'TDS', value: r.tdsText),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: _StatusCard(
+                              title: within ? 'Within Range' : 'Out of Range',
+                              caption: 'Water Quality Range')),
+                      const SizedBox(width: 6),
+                      Expanded(
+                          child: _StatusCard(
+                              title: live.connected ? 'Connected' : 'Offline',
+                              caption: 'Device Status')),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 28),
 

@@ -64,7 +64,7 @@ class _RecordsBinScreenState extends State<RecordsBinScreen> {
         _Entry(
           RecordType.filtration,
           '${r.title} ${r.time}'.toLowerCase(),
-          DateTime(2026, 10, 26).add(Duration(minutes: r.number)),
+          r.timestamp ?? DateTime(2026, 10, 26).add(Duration(minutes: r.number)),
           (tap) => FiltrationRecordCard(record: r, inBin: true, onTap: tap),
           () => _filtration.restore(r, f),
         ),
@@ -81,7 +81,7 @@ class _RecordsBinScreenState extends State<RecordsBinScreen> {
         _Entry(
           RecordType.notification,
           '${a.title} ${a.body} ${a.time}'.toLowerCase(),
-          DateTime(2026, 10, 24),
+          a.createdAt ?? DateTime(2026, 10, 24),
           (tap) => AlertTile(alert: a, onTap: tap),
           () => _notifications.restore(a, n),
         ),
